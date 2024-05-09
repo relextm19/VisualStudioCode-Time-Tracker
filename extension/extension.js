@@ -6,11 +6,12 @@ require('isomorphic-fetch');
  */
 
 let serverOnline = true;
+let start;
 
 async function activate(context) {
     let languageName = vscode.window.activeTextEditor.document.languageId;
     let langTime = await getStartingLanguageTime(languageName);
-    let start = new Date();
+    start = new Date();
     let updated = false;
 
     let interval = setInterval(async () => {
@@ -18,7 +19,6 @@ async function activate(context) {
             let end = new Date();
             let time = calculateTime(start, end);
             langTime += time;
-            
             if (langTime && languageName) {
                 try{
                     await fetch ('http://localhost:5000/updateTime', {
@@ -40,7 +40,7 @@ async function activate(context) {
             }
             start = new Date();
         }
-    }, 1000);
+    }, 1200);
 
     context.subscriptions.push({
         dispose: () => {
@@ -92,9 +92,11 @@ async function checkServerStatus() {
             },
             body: JSON.stringify({ 'name': 'test', 'time': 0 })
         });
-
+        start = new Date();
         serverOnline = true;
+        return start;
     } catch (error) {
+        console.log('Server is offline');
         setTimeout(checkServerStatus, 3000); 
     }
 }
