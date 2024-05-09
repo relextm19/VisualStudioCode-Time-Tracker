@@ -4,34 +4,43 @@ require('isomorphic-fetch');
 /**
  * @param {vscode.ExtensionContext} context
  */
-async function activate(context) {
-    
 
+let serverOnline = true;
+
+async function activate(context) {
     let languageName = vscode.window.activeTextEditor.document.languageId;
     let langTime = await getStartingLanguageTime(languageName);
     let start = new Date();
     let updated = false;
 
     let interval = setInterval(async () => {
-        let time = calculateTime(start);
-        langTime += time;
-        
-        if (langTime && languageName) {
-            await fetch ('http://localhost:5000/updateTime', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 'name': languageName, 'time': langTime })
-            });
+        if(serverOnline){
+            let end = new Date();
+            let time = calculateTime(start, end);
+            langTime += time;
+            
+            if (langTime && languageName) {
+                try{
+                    await fetch ('http://localhost:5000/updateTime', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 'name': languageName, 'time': langTime })
+                    });
+                } catch (error) {
+                    serverOnline = false;
+                    checkServerStatus();
+                }
+            }
+            ({ languageName, updated } = updateLanguageName(languageName));
+            if (updated) {
+                langTime = await getStartingLanguageTime(languageName);
+                updated = false;
+            }
+            start = new Date();
         }
-        ({ languageName, updated } = updateLanguageName(languageName));
-        if (updated) {
-            langTime = await getStartingLanguageTime(languageName);
-            updated = false;
-        }
-        start = new Date();
-    }, 3000);
+    }, 1000);
 
     context.subscriptions.push({
         dispose: () => {
@@ -39,6 +48,7 @@ async function activate(context) {
         }
     });
 }
+
 async function getStartingLanguageTime(languageName){
     const response = await fetch('http://localhost:5000/getTime', {
         method: 'POST',
@@ -55,8 +65,7 @@ async function getStartingLanguageTime(languageName){
     }
 }
 
-function calculateTime(start) {
-    let end = new Date();
+function calculateTime(start, end) {
     let timeDiff = Math.round((end.getTime() - start.getTime()) / 1000);
     
     return timeDiff;
@@ -66,13 +75,30 @@ function updateLanguageName(oldLanguageName){
     let updated = false;
     if (vscode.window.activeTextEditor) {
         let languageName = vscode.window.activeTextEditor.document.languageId;
-        if (languageName !== oldLanguageName && languageName !== 'plaintext') {
+        if (languageName !== oldLanguageName) {
             updated = true;
         }
         return { languageName, updated };
     }
     return { languageName: null, updated };
 }
+
+async function checkServerStatus() {
+    try {
+        await fetch('http://localhost:5000/updateTime', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 'name': 'test', 'time': 0 })
+        });
+
+        serverOnline = true;
+    } catch (error) {
+        setTimeout(checkServerStatus, 3000); 
+    }
+}
+
 function deactivate() {}
 
 module.exports = {
