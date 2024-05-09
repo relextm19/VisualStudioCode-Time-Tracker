@@ -1,0 +1,53 @@
+{
+  "name": "timetracker",
+  "displayName": "TimeTracker",
+  "description": "",
+  "version": "0.0.1",
+  "publisher": "relextm19",
+  "engines": {
+    "vscode": "^1.89.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:python",
+    "onLanguage:typescript",
+    "onLanguage:go",
+    "onLanguage:java",
+    "onLanguage:rust",
+    "onLanguage:ruby",
+    "onLanguage:php",
+    "onLanguage:html",
+    "onLanguage:css",
+    "onLanguage:csharp",
+    "onLanguage:cpp",
+    "onLanguage:r",
+    "onLanguage:scala",
+    "onLanguage:perl",
+    "onLanguage:c",
+    "onLanguage:kotlin",
+    "onLanguage:swift"
+  ],
+  "main": "./extension.js",
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/vscode": "^1.89.0",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.3.9",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "esm": "^3.2.25",
+    "isomorphic-fetch": "^3.0.0",
+    "node-fetch": "^3.3.2"
+  }
+}
