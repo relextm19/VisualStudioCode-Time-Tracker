@@ -40,7 +40,7 @@ async function activate(context) {
             }
             start = new Date();
         }
-    }, 1200);
+    }, 1000);
 
     context.subscriptions.push({
         dispose: () => {

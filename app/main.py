@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_socketio import SocketIO
 from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
@@ -7,6 +8,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db/database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 app.secret_key = 'secret'
+socketio = SocketIO(app)
 
 class language(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -22,6 +24,8 @@ def update():
     if language_:
         language_.time = language_time
         db.session.commit()
+        print(f'Updated {language_name} time {language_time}')
+        socketio.emit('update', {language_name: language_time})        
         return jsonify({200: 'Updated'})
     else:
         return jsonify({404: 'Not Found'})
