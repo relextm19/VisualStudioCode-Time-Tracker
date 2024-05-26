@@ -5,103 +5,153 @@ require('isomorphic-fetch');
  * @param {vscode.ExtensionContext} context
  */
 
-let serverOnline = true;
-let start;
+let language;
+let project;
+let failedToSend = [];
 
 async function activate(context) {
-    let languageName = vscode.window.activeTextEditor.document.languageId;
-    let langTime = await getStartingLanguageTime(languageName);
-    start = new Date();
-    let updated = false;
+    language = {
+        name: vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.languageId : "",
+        startingTime: Date.now(),
+    };
+    project = {
+        name: vscode.workspace ? vscode.workspace.name : "",
+        startingTime: Date.now(),
+    };
+    await updateCurrentLanguage();
 
-    let interval = setInterval(async () => {
-        if(serverOnline){
-            let end = new Date();
-            let time = calculateTime(start, end);
-            langTime += time;
-            if (langTime && languageName) {
-                try{
-                    await fetch ('http://localhost:5000/updateTime', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ 'name': languageName, 'time': langTime })
-                    });
-                } catch (error) {
-                    serverOnline = false;
-                    checkServerStatus();
-                }
+    setInterval( async () =>{
+        if (vscode.window.activeTextEditor) {        
+            let { languageName, languageUpdated } = updateLanguageName(language.name);
+            if (languageUpdated) {
+                await updateCurrentLanguage();
+
+                await sendLanguageData();
+
+                language.name = languageName;
+                language.startingTime = Date.now();
             }
-            ({ languageName, updated } = updateLanguageName(languageName));
-            if (updated) {
-                langTime = await getStartingLanguageTime(languageName);
-                updated = false;
+
+            let { projectName, projectUpdated } = updateProjectName(project.name);
+            if (projectUpdated) {
+                await sendProjectData();
+
+                project.name = projectName;
+                project.startingTime = Date.now();
             }
-            start = new Date();
+
+            await sendUnsedData(failedToSend);
+        } else{
+
         }
-    }, 1000);
+    }, 2000);
 
     context.subscriptions.push({
         dispose: () => {
-            clearInterval(interval);
         }
     });
 }
 
-async function getStartingLanguageTime(languageName){
-    const response = await fetch('http://localhost:5000/getTime', {
+function calculateTime(start, end) {
+    let timeDiff = Math.round((end - start) / 1000);
+    
+    return timeDiff;
+}
+
+function updateLanguageName(oldLanguageName){
+    let languageUpdated = false;
+    if (vscode.window.activeTextEditor) {
+        let languageName = vscode.window.activeTextEditor.document.languageId;
+        if (languageName !== oldLanguageName) {
+            languageUpdated = true;
+        }
+        return { languageName, languageUpdated };
+    }
+    return { languageName: null, languageUpdated };
+}
+
+function updateProjectName(oldProjectName) {
+    let projectUpdated = false;
+    if (vscode.workspace.name) {
+        let projectName = vscode.workspace.name;
+        if (projectName !== oldProjectName) {
+            projectUpdated = true;
+        }
+        return { projectName, projectUpdated};
+    }
+    return { projectName: null,  projectUpdated };
+}
+
+async function sendUnsedData(failedToSend) {
+    failedToSend.forEach(async (data) => {
+        await fetch('http://localhost:5000/updateLangTime', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 'name': data.name, 'time': data.time })
+        });
+    });
+}
+
+async function sendLanguageData() {
+    let time = calculateTime(language.startingTime, Date.now());
+    try{
+        await fetch("http://localhost:5000/updateLangTime", {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name: language.name, time: time }),
+        });
+    } catch (error) {
+        failedToSend.push({ 'name': language.name, 'time': time });
+    }
+}
+
+async function sendProjectData() {
+    let time = calculateTime(project.startingTime, Date.now());
+
+    try{
+        await fetch("http://localhost:5000/updateProjectTime", {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name: project.name, time: time }),
+        });
+    } catch (error) {
+        failedToSend.push({ 'name': project.name, 'time': time });
+    }
+}
+
+async function updateCurrentLanguage(ended) {
+    if (ended){
+        await fetch('http://localhost:5000/updateActiveLanguage', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 'name': 'None' })
+        });
+    }
+    let languageName = vscode.window.activeTextEditor.document.languageId;
+    await fetch('http://localhost:5000/updateActiveLanguage', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 'name': languageName })
     });
-    const data = await response.json();
-    if (data[200]) {
-        return Number(data[200]);
-    } else if (data[201]) {
-        return 0;
-    }
 }
 
-function calculateTime(start, end) {
-    let timeDiff = Math.round((end.getTime() - start.getTime()) / 1000);
+async function deactivate() {
+    let ended = true;
+    await updateCurrentLanguage(ended);
     
-    return timeDiff;
+    await sendLanguageData();
+    await sendProjectData();
 }
-
-function updateLanguageName(oldLanguageName){
-    let updated = false;
-    if (vscode.window.activeTextEditor) {
-        let languageName = vscode.window.activeTextEditor.document.languageId;
-        if (languageName !== oldLanguageName) {
-            updated = true;
-        }
-        return { languageName, updated };
-    }
-    return { languageName: null, updated };
-}
-
-async function checkServerStatus() {
-    try {
-        await fetch('http://localhost:5000/updateTime', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 'name': 'test', 'time': 0 })
-        });
-        start = new Date();
-        serverOnline = true;
-        return start;
-    } catch (error) {
-        console.log('Server is offline');
-        setTimeout(checkServerStatus, 3000); 
-    }
-}
-
-function deactivate() {}
 
 module.exports = {
     activate,
