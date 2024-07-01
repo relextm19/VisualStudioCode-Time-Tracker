@@ -12,7 +12,7 @@
             <div class="total-time">
                 <div class="wrap">
                     <h2 class="total-time-h">Total Time:</h2>
-                    <h2 class="total-time-p">{{ total_time }}h</h2>
+                    <h2 class="total-time-p" data-time-seconds="{{ total_time }}">{{ (total_time / 3600)|round(2) }}h</h2>
                 </div>
             </div>
             <div class="lang-stats">

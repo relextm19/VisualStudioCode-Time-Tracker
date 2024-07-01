@@ -1,29 +1,43 @@
 document.addEventListener("DOMContentLoaded", () => {
   let elements = document.querySelectorAll(".lang-time");
   let total_time_element = document.querySelector(".total-time-p");
+  let total_time_seconds = parseInt(total_time_element.getAttribute('data-time-seconds'));
   let intervals = {};
+  let isCoding = false;
   const socket = io("http://127.0.0.1:5000");
 
+  //parse the time in seconds to a readable format
   for(let element of elements) {
     element.innerHTML = format_time(parseInt(element.getAttribute('data-time-seconds')));
   }
+  //set interval for the total time
+  setInterval(() => {
+    console.log(isCoding);
+    if(!isCoding) return;
+    total_time_seconds += 1;
+    total_time_element.setAttribute('data-time-seconds', total_time_seconds);
+    total_time_element.innerHTML = (total_time_seconds / 3600).toFixed(2) + "h";
+  }, 1000);
 
+  //update the time when the server sends an update
   socket.on("update", (data) => {
-    if(data.name == 'None') {
-      for(let element of elements) {
-        console.log('Clearing interval for:', element.getAttribute('data-name'));
-        clearInterval(intervals[element.getAttribute('data-name')]);
-      }
-      return;
+    console.log(data);
+    //clear the interval for all languages
+    for(interval in intervals) {
+      clearInterval(intervals[interval]);
+      delete intervals[interval];
     }
+    
+    isCoding = false;
+
+    //set the correct interval
     for(let element of elements) {
       if(element.getAttribute('data-name') == data.name) {
         intervals[data.name] = updateTime(element);
-      } else{
-        clearInterval(intervals[element.getAttribute('data-name')]);
+        isCoding = true;
       }
     }
-});
+  });
   
   function format_time(time){
     let hours = Math.floor(time / 3600);

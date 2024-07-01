@@ -2,6 +2,7 @@ from flask import Flask, request, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO
 from flask_cors import CORS
+import hashlib
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -11,93 +12,61 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'secret'
 
 CORS(app)
-
 db = SQLAlchemy(app)
 
-class language(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    time = db.Column(db.String, nullable=False)
+class Sessions(db.Model):
+    id = db.Column(db.String(100), primary_key=True)
+    startDate = db.Column(db.String(100), nullable=False)
+    endDate = db.Column(db.String(100), nullable=False)
+    language = db.Column(db.String(100), nullable=False)
+    startTime = db.Column(db.Integer)
+    endTime = db.Column(db.Integer)
 
-class project(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    time = db.Column(db.String, nullable=False)
+started_sessions = {}
 
-absolute_total_time = 0.00
-
-@app.route('/updateLangTime', methods=['POST'])
-def update():
-    global absolute_total_time
+@app.route('/startSession', methods=['POST'])
+def start_session():
     data = request.get_json()
-    language_name = data['name']
-    language_time = data['time']
-    language_ = language.query.filter_by(name=language_name).first()
-
-    if language_:
-        absolute_total_time -= int(language_.time)
-        language_.time = int(language_.time) + int(language_time)
+    if 'name' not in data or 'startTime' not in data or 'startDate' not in data:
+        return jsonify({'message': 'Invalid data'}), 400
+    try:
+        language_name = data['name']
+        starting_time = data['startTime']
+        startDate = data['startDate']
+        session_id = hashlib.md5(f'{language_name}{starting_time}{startDate}'.encode()).hexdigest()
+        session_id = session_id[:10]
+        db.session.add(Sessions(id=session_id, startTime=starting_time, language = language_name, startDate=startDate))
         db.session.commit()
 
-        absolute_total_time += int(language_time)
-        
-        return jsonify({200: 'Updated'})
-    else:
-        new_language = language(name=language_name, time=language_time)
-        db.session.add(new_language)
-        db.session.commit()
-        absolute_total_time += int(language_time)
-        return jsonify({201: 'created'})
+        started_sessions[session_id] = starting_time
+    except Exception as e:
+        print(e)
+        return jsonify({'message': 'An error occurred'}), 500
 
-@app.route('/updateProjectTime', methods=['POST'])
-def updateProjectTime():
+    return jsonify({'session_id': session_id}), 201
+
+@app.route('/endSession', methods=['POST'])
+def end_session():
     data = request.get_json()
-    project_name = data['name']
-    project_time = data['time']
-    project_ = project.query.filter_by(name=project_name).first()
-    if project_:
-        project_.time = int(project_.time) + int(project_time)
+    if 'session_id' not in data or 'endTime' not in data or 'endDate' not in data:
+        return jsonify({'message': 'Invalid data'}), 400
+    try:
+        session_id = data['session_id']
+        end_time = data['endTime']
+        end_date = data['endDate']
+        session = Sessions.query.filter_by(id=session_id).first()
+        session.endTime = end_time
+        session.endDate = end_date
         db.session.commit()
-        return jsonify({200: 'Updated'})
-    else:
-        new_project = project(name=project_name, time=project_time)
-        db.session.add(new_project)
-        db.session.commit()
-        return jsonify({201: 'created'})
-
-@app.route('/updateActiveLanguage', methods=['POST'])
-def update_active_language():
-    data = request.get_json()
-    language_name = data['name']
-
-    if language_name == 'None':
-        socketio.emit('update', {'name': 'None'})
-        return jsonify({200: 'Ok'})
-
-    language_ = language.query.filter_by(name=language_name).first()
-    if language_:
-        socketio.emit('update', {'name': language_name})
-        return jsonify({200: 'Ok'})
-    else:
-        new_language = language(name=language_name, time=0)
-        db.session.add(new_language)
-        db.session.commit()
-        socketio.emit('update', {'name': language_name})
-        return jsonify({201: 'Created'})
+    except Exception as e:
+        print(e)
+        return jsonify({'message': 'An error occurred'}), 500
     
+    return jsonify({'message': 'Session ended'}), 200
+
 @app.route('/')
 def dashboard():
-    global absolute_total_time
-    langs = language.query.all()
-    lang_stats = []
-    langs.sort(key=lambda x: int(x.time), reverse=True)
-    absolute_total_time = sum(time for time in [int(lang.time) for lang in langs])
-    for lang in langs:
-        time = int(lang.time)
-        formated_time = format_time(time)
-        lang_stats.append({'name': lang.name, 'time': f'{time}'})
-    
-    return render_template('dashboard.html', lang_stats=lang_stats, total_time=f"{absolute_total_time / 3600:.2f}")
+    return render_template('dashboard.html')
 
 def format_time(time):
     hours = time // 3600
