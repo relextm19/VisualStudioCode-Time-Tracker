@@ -6,151 +6,86 @@ require('isomorphic-fetch');
  */
 
 let language;
-let project;
-let failedToSend = [];
+
 
 async function activate(context) {
     language = {
         name: vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.languageId : "",
         startingTime: Date.now(),
     };
-    project = {
-        name: vscode.workspace ? vscode.workspace.name : "",
-        startingTime: Date.now(),
-    };
-    await updateCurrentLanguage();
-
-    setInterval( async () =>{
+    await startSession(language.name);
+    const interval = setInterval(async () => {
         if (vscode.window.activeTextEditor) {        
-            let { languageName, languageUpdated } = updateLanguageName(language.name);
-            if (languageUpdated) {
-                await updateCurrentLanguage();
-
-                await sendLanguageData();
-
-                language.name = languageName;
+            let { newLanguageName, isUpdated } = updateLanguageName(language.name);
+            if (isUpdated) {
+                await endSession(language.name);
+                language.name = newLanguageName;
                 language.startingTime = Date.now();
+                await startSession(language.name);
             }
-
-            let { projectName, projectUpdated } = updateProjectName(project.name);
-            if (projectUpdated) {
-                await sendProjectData();
-
-                project.name = projectName;
-                project.startingTime = Date.now();
-            }
-
-            await sendUnsedData(failedToSend);
         } else{
-
+            if(language.name !== ""){
+                await endSession(language.name);
+                language.name = "";
+            }
         }
     }, 2000);
 
     context.subscriptions.push({
         dispose: () => {
+            clearInterval(interval);
         }
     });
 }
 
-function calculateTime(start, end) {
-    let timeDiff = Math.round((end - start) / 1000);
-    
-    return timeDiff;
-}
-
-function updateLanguageName(oldLanguageName){
-    let languageUpdated = false;
-    if (vscode.window.activeTextEditor) {
-        let languageName = vscode.window.activeTextEditor.document.languageId;
-        if (languageName !== oldLanguageName) {
-            languageUpdated = true;
-        }
-        return { languageName, languageUpdated };
+async function startSession(newLanguageName) {
+    let data = { 
+        'name' : newLanguageName,
+        'startTime' : language.startingTime,
+        'startDate': new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long',   day: 'numeric', timeZone: 'Europe/Warsaw' }),
     }
-    return { languageName: null, languageUpdated };
-}
-
-function updateProjectName(oldProjectName) {
-    let projectUpdated = false;
-    if (vscode.workspace.name) {
-        let projectName = vscode.workspace.name;
-        if (projectName !== oldProjectName) {
-            projectUpdated = true;
-        }
-        return { projectName, projectUpdated};
-    }
-    return { projectName: null,  projectUpdated };
-}
-
-async function sendUnsedData(failedToSend) {
-    failedToSend.forEach(async (data) => {
-        await fetch('http://localhost:5000/updateLangTime', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 'name': data.name, 'time': data.time })
-        });
-    });
-}
-
-async function sendLanguageData() {
-    let time = calculateTime(language.startingTime, Date.now());
-    try{
-        await fetch("http://localhost:5000/updateLangTime", {
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ name: language.name, time: time }),
-        });
-    } catch (error) {
-        failedToSend.push({ 'name': language.name, 'time': time });
-    }
-}
-
-async function sendProjectData() {
-    let time = calculateTime(project.startingTime, Date.now());
-
-    try{
-        await fetch("http://localhost:5000/updateProjectTime", {
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ name: project.name, time: time }),
-        });
-    } catch (error) {
-        failedToSend.push({ 'name': project.name, 'time': time });
-    }
-}
-
-async function updateCurrentLanguage(ended) {
-    if (ended){
-        await fetch('http://localhost:5000/updateActiveLanguage', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 'name': 'None' })
-        });
-    }
-    let languageName = vscode.window.activeTextEditor.document.languageId;
-    await fetch('http://localhost:5000/updateActiveLanguage', {
+    await fetch('http://127.0.0.1:5000/startSession', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 'name': languageName })
+        body: JSON.stringify(data),
     });
 }
 
+async function endSession(languageName) {
+    let data = {
+        'name': languageName,
+        'endTime': Date.now(),
+        'endDate': new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long',   day: 'numeric', timeZone: 'Europe/Warsaw' }),
+    }
+    await fetch('http://127.0.0.1:5000/endSession', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    });
+}
+
+function updateLanguageName(oldLanguageName) {
+    let languageUpdated = false;
+    let newLanguageName = oldLanguageName;
+
+    if (vscode.window.activeTextEditor) {
+        newLanguageName = vscode.window.activeTextEditor.document.languageId;
+        if (newLanguageName !== oldLanguageName) {
+            languageUpdated = true;
+        }
+    }
+    return { newLanguageName, isUpdated: languageUpdated };
+}
+
+
 async function deactivate() {
-    let ended = true;
-    await updateCurrentLanguage(ended);
-    
-    await sendLanguageData();
-    await sendProjectData();
+    if (language.name !== "") {
+        await endSession(language.name);
+    }
 }
 
 module.exports = {
