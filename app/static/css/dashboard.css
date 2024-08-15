@@ -80,3 +80,56 @@
     color:white;
 }
 
+@keyframes swipeIn {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.swipeIn {
+    animation: swipeIn 0.3s forwards;
+}
+
+.text-content{
+    margin-top: 3rem;
+    transition: all 0.5s;
+}
+
+.chart-content{
+    display: none;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 3rem;
+    transition: all 0.5s;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 3rem;
+}
+
+.button{
+    background-color: #005517;
+    color: white;
+    font-size: 1.5rem;
+    padding: 1rem;
+    border: none;
+    border-radius: 1rem;
+    width: 10rem;
+    margin: 0 1rem;
+    cursor: pointer;
+    box-shadow: 0 0 10px 2px #005517;
+    transition: all 0.5s;
+}
+.button:hover{
+    position: relative;
+    background-color: #003d11;
+    width: 10.5rem;
+    height: 110%;
+}

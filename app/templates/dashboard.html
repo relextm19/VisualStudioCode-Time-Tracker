@@ -8,13 +8,17 @@
         <div class="header">
             <h1>Dashboard</h1>
         </div>
-        <div class="content">
-            <div class="total-time">
-                <div class="wrap">
-                    <h2 class="total-time-h">Total Time:</h2>
-                    <h2 class="total-time-p" data-time-seconds="{{ total_time }}">{{ (total_time / 3600)|round(2) }}h</h2>
-                </div>
+        <div class="total-time">
+            <div class="wrap">
+                <h2 class="total-time-h">Total Time:</h2>
+                <h2 class="total-time-p" data-time-seconds="{{ total_time }}">{{ (total_time / 3600)|round(2) }}h</h2>
             </div>
+        </div>
+        <div class="buttons">
+            <button id="text-button" class="button">Text</button>
+            <button id="chart-button" class="button">Chart</button>
+        </div>
+        <div class="text-content">
             <div class="lang-stats">
                 {% for name, time in language_times.items() %}
                 
@@ -31,7 +35,15 @@
                 {% endfor %}
             </div>
         </div>
+        <div class="chart-content">
+            <canvas id="chart"></canvas>    
+        </div>
     </div>
+    <script>
+        var language_times = {{ language_times|tojson }};
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.socket.io/4.2.0/socket.io.min.js"></script>
-    <script src="{{ url_for('static', filename='js/socket.js') }}"></script>    
+    <script type="module" src="{{ url_for('static', filename='js/parse.js') }}"></script>    
+    <script type="module" src="{{ url_for('static', filename='js/chart.js') }}"></script>    
 {% endblock %}
