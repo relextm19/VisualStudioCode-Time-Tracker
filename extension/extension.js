@@ -5,28 +5,28 @@ require('isomorphic-fetch');
  * @param {vscode.ExtensionContext} context
  */
 
-let language;
+let data;
 
 
 async function activate(context) {
-    language = {
-        name: vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.languageId : "",
+    data = {
+        languageName: vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.languageId : "",
         startingTime: Date.now(),
     };
-    await startSession(language.name);
+    await startSession();
     const interval = setInterval(async () => {
         if (vscode.window.activeTextEditor) {        
-            let { newLanguageName, isUpdated } = updateLanguageName(language.name);
+            let { newLanguageName, isUpdated } = updateLanguageName(data.languageName);
             if (isUpdated) {
-                await endSession(language.name);
-                language.name = newLanguageName;
-                language.startingTime = Date.now();
-                await startSession(language.name);
+                await endSession();
+                data.languageName = newLanguageName;
+                data.startingTime = Date.now();
+                await startSession();
             }
         } else{
-            if(language.name !== ""){
-                await endSession(language.name);
-                language.name = "";
+            if(data.languageName !== ""){
+                await endSession();
+                data.languageName = "";
             }
         }
     }, 2000);
@@ -38,10 +38,10 @@ async function activate(context) {
     });
 }
 
-async function startSession(newLanguageName) {
-    let data = { 
-        'name' : newLanguageName,
-        'startTime' : language.startingTime,
+async function startSession() {
+    let payload = { 
+        'language' : data.languageName,
+        'startTime' : data.startingTime,
         'startDate': new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long',   day: 'numeric', timeZone: 'Europe/Warsaw' }),
     }
     await fetch('http://127.0.0.1:5000/startSession', {
@@ -49,13 +49,13 @@ async function startSession(newLanguageName) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
     });
 }
 
-async function endSession(languageName) {
-    let data = {
-        'name': languageName,
+async function endSession() {
+    let payload = {
+        'language': data.languageName,
         'endTime': Date.now(),
         'endDate': new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long',   day: 'numeric', timeZone: 'Europe/Warsaw' }),
     }
@@ -64,7 +64,7 @@ async function endSession(languageName) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
     });
 }
 
@@ -83,8 +83,8 @@ function updateLanguageName(oldLanguageName) {
 
 
 async function deactivate() {
-    if (language.name !== "") {
-        await endSession(language.name);
+    if (data.languageName !== "") {
+        await endSession();
     }
 }
 

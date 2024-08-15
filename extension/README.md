@@ -1,1 +1,0 @@
-This extension helps you to track the time you spend coding in vscode, hope u enjoy it.

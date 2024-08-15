@@ -1,14 +1,48 @@
 <!DOCTYPE html>
-<html lang = "en">
+<html lang="en">
     <head>
-        <meta charset = "UTF-8">
-        {% block head %}
-
-        {% endblock %}
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dashboard</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/menu.css') }}">
     </head>
     <body>
-        {% block content %}
-
-        {% endblock %}
+        <div id="container">
+            <div class="header">
+                <h1>{{ header_text }}</h1>
+            </div>
+            <div class="total-time">
+                <div class="wrap">
+                    <h2 class="total-time-h">Total:&nbsp;</h2>
+                    <h2 class="total-time-p" data-time-seconds="{{ total_time }}">{{ (total_time / 3600)|round(2) }}h</h2>
+                </div>
+            </div>
+            <div class="buttons">
+                <button id="text-button" class="button button-active">Text</button>
+                <button id="chart-button" class="button">Chart</button>
+            </div>
+            <div class="menu">
+                <nav>
+                    <ul>
+                        <a href="{{ url_for('languages') }}"><li>Languages</li></a>
+                        <a href="{{ url_for('projects') }}"><li>Projects</li></a>
+                    </ul>
+                </nav>
+            </div>
+            {% block content %}
+            
+            {% endblock %}
+        </div>
+        <script>
+            var language_times = {{ language_times|tojson }};
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.socket.io/4.2.0/socket.io.min.js"></script>
+        <script src="{{ url_for('static', filename='js/parse.js') }}"></script>    
+        <script src="{{ url_for('static', filename='js/chart.js') }}"></script>    
+        <script src="{{ url_for('static', filename='js/menu.js') }}"></script>    
     </body>
 </html>
+    

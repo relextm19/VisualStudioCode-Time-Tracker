@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import hashlib
@@ -21,16 +21,30 @@ class Sessions(db.Model):
     endTime = db.Column(db.Integer)
 
 started_sessions = {}
+invalid_languages = {
+    "none",
+    "markdown",
+    "json",
+    "plaintext",
+    ".gitignore",
+    "yaml",
+    "dockerfile",
+    "ignore",
+    "shellscript",
+    "bash"
+}
 
 @app.route('/startSession', methods=['POST'])
 def start_session():
     data = request.get_json()
-    if 'name' not in data or 'startTime' not in data or 'startDate' not in data:
+    language_name = data['language']
+    starting_time = data['startTime']
+    startDate = data['startDate']
+    if not language_name or not starting_time or not startDate:
         return jsonify({'message': 'Invalid data'}), 400
     try:
-        language_name = data['name']
-        starting_time = data['startTime']
-        startDate = data['startDate']
+        if language_name in invalid_languages:
+            return jsonify({'message': 'Invalid language'}), 400
         session_id = hashlib.md5(f'{language_name}{starting_time}{startDate}'.encode()).hexdigest()
         db.session.add(Sessions(id=session_id, startTime=starting_time, language = language_name, startDate=startDate))
         db.session.commit()
@@ -46,14 +60,15 @@ def start_session():
 def end_session():
     data = request.get_json()
     print(data)
-    if 'name' not in data or 'endTime' not in data or 'endDate' not in data:
+    language_name = data['language']
+    end_time = data['endTime']
+    end_date = data['endDate']
+    
+    if not language_name or not end_time or not end_date:
         return jsonify({'message': 'Invalid data'}), 400
     try:
-        language_name = data['name']
         if language_name not in started_sessions:
             return jsonify({'message': 'Session not found'}), 404
-        end_time = data['endTime']
-        end_date = data['endDate']
         session_id = started_sessions[language_name]
         session = Sessions.query.filter_by(id=session_id).first()
         if not session:
@@ -70,7 +85,11 @@ def end_session():
     return jsonify({'message': 'Session ended'}), 200
 
 @app.route('/')
-def dashboard():
+def home():
+    return redirect('/languages')
+
+@app.route('/languages')
+def languages():
     language_times = {}
     total_time = 0
     current_time = int(time.time() * 1000)
@@ -92,8 +111,13 @@ def dashboard():
             total_time += session_time
     #sort languages by time
     language_times = dict(sorted(language_times.items(), key=lambda item: item[1], reverse=True))
-    return render_template('dashboard.html', language_times=language_times, total_time=total_time)
+    return render_template('languages.html', header_text = "Language Times", language_times=language_times, total_time=total_time)
 
+@app.route('/projects')
+def projects():
+    projects = {"cipa":"dupa"}
+    total_time = 0
+    return render_template('projects.html', header_text = "Project Times", projects=projects, total_time=total_time)  
 
 def format_time(time):
     hours = time // 3600

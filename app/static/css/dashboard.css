@@ -11,7 +11,8 @@
     position: relative;
     height: 100vh;
     width: 100vw;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     background: linear-gradient(#111111, #152018, #042200);
     background-repeat: no-repeat;
 }
@@ -90,12 +91,11 @@
 }
 
 .swipeIn {
-    animation: swipeIn 0.3s forwards;
+    animation: swipeIn 0.5s forwards;
 }
 
 .text-content{
     margin-top: 3rem;
-    transition: all 0.5s;
 }
 
 .chart-content{
@@ -104,7 +104,6 @@
     align-items: center;
     width: 100%;
     margin-top: 3rem;
-    transition: all 0.5s;
 }
 
 .buttons {
@@ -130,6 +129,12 @@
 .button:hover{
     position: relative;
     background-color: #003d11;
+    width: 10.5rem;
+    height: 110%;
+}
+
+.button-active{
+    background-color: #016e1e;
     width: 10.5rem;
     height: 110%;
 }

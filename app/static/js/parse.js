@@ -20,13 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   chart_content.style.display = 'none';
-  text_button.style.background = '#01681c';
 
   chart_button.addEventListener("click", () => {
     if (chart_content.style.display !== 'none') return; 
     text_content.classList.remove('swipeIn');
-    text_button.style.background = '#005517';
-    chart_button.style.background = '#01681c';
+    text_button.classList.remove('button-active');
+    chart_button.classList.add('button-active');
 
     text_content.style.display = 'none';
     chart_content.style.display = 'flex';
@@ -36,8 +35,8 @@ document.addEventListener("DOMContentLoaded", () => {
   text_button.addEventListener("click", () => {
     if (text_content.style.display !== 'none') return;
     chart_content.classList.remove('swipeIn');
-    chart_button.style.background = '#005517';
-    text_button.style.background = '#01681c';
+    chart_button.classList.remove('button-active');
+    text_button.classList.add('button-active');
 
     chart_content.style.display = 'none';
     text_content.style.display = 'flex';
