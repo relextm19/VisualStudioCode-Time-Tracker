@@ -11,15 +11,17 @@ let data;
 async function activate(context) {
     data = {
         languageName: vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.languageId : "",
+        projectName: vscode.workspace.rootPath ? vscode.workspace.rootPath.split('\\').pop() : "",
         startingTime: Date.now(),
     };
     await startSession();
     const interval = setInterval(async () => {
         if (vscode.window.activeTextEditor) {        
-            let { newLanguageName, isUpdated } = updateLanguageName(data.languageName);
-            if (isUpdated) {
+            let { newLanguageName, newProjectName, updated } = updateData();
+            if (updated) {
                 await endSession();
                 data.languageName = newLanguageName;
+                data.projectName = newProjectName;
                 data.startingTime = Date.now();
                 await startSession();
             }
@@ -41,6 +43,7 @@ async function activate(context) {
 async function startSession() {
     let payload = { 
         'language' : data.languageName,
+        'project' : data.projectName,
         'startTime' : data.startingTime,
         'startDate': new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long',   day: 'numeric', timeZone: 'Europe/Warsaw' }),
     }
@@ -56,6 +59,7 @@ async function startSession() {
 async function endSession() {
     let payload = {
         'language': data.languageName,
+        'project': data.projectName,
         'endTime': Date.now(),
         'endDate': new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long',   day: 'numeric', timeZone: 'Europe/Warsaw' }),
     }
@@ -68,17 +72,22 @@ async function endSession() {
     });
 }
 
-function updateLanguageName(oldLanguageName) {
-    let languageUpdated = false;
-    let newLanguageName = oldLanguageName;
+function updateData() {
+    let updated = false;
+    let newLanguageName, newProjectName;
 
     if (vscode.window.activeTextEditor) {
         newLanguageName = vscode.window.activeTextEditor.document.languageId;
-        if (newLanguageName !== oldLanguageName) {
-            languageUpdated = true;
+        newProjectName = vscode.workspace.rootPath.split('\\').pop();
+        if(newLanguageName !== data.languageName) console.log("lang updated");
+        if(newProjectName !== data.projectName){
+            console.log(newProjectName, data.projectName);
+        }
+        if (newLanguageName !== data.languageName || newProjectName !== data.projectName) {
+            updated = true;
         }
     }
-    return { newLanguageName, isUpdated: languageUpdated };
+    return { newLanguageName, newProjectName, updated };
 }
 
 

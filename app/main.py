@@ -17,6 +17,7 @@ class Sessions(db.Model):
     startDate = db.Column(db.String(100), nullable=False)
     endDate = db.Column(db.String(100), nullable=False)
     language = db.Column(db.String(100), nullable=False)
+    project = db.Column(db.String(100))
     startTime = db.Column(db.Integer)
     endTime = db.Column(db.Integer)
 
@@ -37,16 +38,17 @@ invalid_languages = {
 @app.route('/startSession', methods=['POST'])
 def start_session():
     data = request.get_json()
-    language_name = data['language']
-    starting_time = data['startTime']
-    startDate = data['startDate']
-    if not language_name or not starting_time or not startDate:
+    language_name = data.get('language')
+    project_name = data.get('project')
+    starting_time = data.get('startTime')
+    startDate = data.get('startDate')
+    if not language_name or not starting_time or not startDate or not project_name:
         return jsonify({'message': 'Invalid data'}), 400
     try:
         if language_name in invalid_languages:
             return jsonify({'message': 'Invalid language'}), 400
         session_id = hashlib.md5(f'{language_name}{starting_time}{startDate}'.encode()).hexdigest()
-        db.session.add(Sessions(id=session_id, startTime=starting_time, language = language_name, startDate=startDate))
+        db.session.add(Sessions(id=session_id, startTime=starting_time, language = language_name, project = project_name, startDate=startDate))
         db.session.commit()
         started_sessions[language_name] = session_id
 
@@ -59,10 +61,9 @@ def start_session():
 @app.route('/endSession', methods=['POST'])
 def end_session():
     data = request.get_json()
-    print(data)
-    language_name = data['language']
-    end_time = data['endTime']
-    end_date = data['endDate']
+    language_name = data.get('language')
+    end_time = data.get('endTime')
+    end_date = data.get('endDate')
     
     if not language_name or not end_time or not end_date:
         return jsonify({'message': 'Invalid data'}), 400
@@ -115,10 +116,20 @@ def languages():
 
 @app.route('/projects')
 def projects():
-    projects = {"cipa":"dupa"}
-    total_time = 0
-    return render_template('projects.html', header_text = "Project Times", projects=projects, total_time=total_time)  
+    try:
+        results = db.session.query(
+            Sessions.project,
+            db.func.sum(Sessions.endTime - Sessions.startTime).label('total_time')
+        ).filter(Sessions.project.isnot(None)).group_by(Sessions.project).all()
 
+        projects = [{'project': result.project, 'total_time': result.total_time} for result in results]
+        total_time = sum(result.total_time or 0 for result in results)
+        
+        return render_template('projects.html', header_text="Project Times", projects=projects, total_time=total_time)
+    except Exception as e:
+        print(e)
+        return jsonify({'message': 'An error occurred'}), 500
+        
 def format_time(time):
     hours = time // 3600
     minutes = (time % 3600) // 60
