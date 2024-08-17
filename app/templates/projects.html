@@ -1,0 +1,35 @@
+{% extends "template.html" %}
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/projects.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/menu.css') }}">
+{% endblock %}
+{% block header %}
+    <h1>Projects</h1>
+{% endblock %}
+{% block content %}
+    <div class="text-content">
+        <div class="project-stats">
+            {% for name, time in projects.items() %}
+            
+            <div class="project-wrap">
+                    <h3 class="project-name">{{ name }}:&nbsp;</h3>
+                    <h3 class="project-time time-div" data-name="{{ name }}" data-time-seconds="{{ time }}">{{ time }}</h3>
+            </div>
+        
+            {% endfor %}
+        </div>
+    </div>
+    <div class="chart-content">
+        <canvas id="chart"></canvas>    
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script>
+        var projects = {{ projects|tojson }};
+        var languages = null;
+    </script>
+    <script src="{{ url_for('static', filename='js/chart.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/parse.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/menu.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>    
+{% endblock %}

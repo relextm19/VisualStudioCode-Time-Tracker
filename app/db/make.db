@@ -4,5 +4,6 @@ CREATE TABLE Sessions(
     endDate TEXT,
     startTime INTEGER,
     endTime INTEGER,
-    language TEXT NOT NULL
+    language TEXT NOT NULL,
+    project TEXT NOT NULL
 )
