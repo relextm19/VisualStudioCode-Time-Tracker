@@ -1,13 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-  let elements = document.querySelectorAll(".lang-time");
+  let elements = document.querySelectorAll(".time-div");
   let total_time_element = document.querySelector(".total-time-p");
-  let chart_button = document.querySelector("#chart-button");
-  let text_button = document.querySelector("#text-button");
-  let text_content = document.querySelector(".text-content");
-  let chart_content = document.querySelector(".chart-content");
-
+ 
   // Parse the time in seconds to a readable format
   for (let element of elements) {
+    console.log(element.getAttribute('data-time-seconds'));
     element.innerHTML = format_time(parseInt(element.getAttribute('data-time-seconds')));
   }
   total_time_element.innerHTML = format_time(parseInt(total_time_element.getAttribute('data-time-seconds')));
@@ -18,28 +15,4 @@ document.addEventListener("DOMContentLoaded", () => {
     let seconds = Math.floor(time % 60);
     return `${hours}h:${minutes}m:${seconds}s`;
   }
-
-  chart_content.style.display = 'none';
-
-  chart_button.addEventListener("click", () => {
-    if (chart_content.style.display !== 'none') return; 
-    text_content.classList.remove('swipeIn');
-    text_button.classList.remove('button-active');
-    chart_button.classList.add('button-active');
-
-    text_content.style.display = 'none';
-    chart_content.style.display = 'flex';
-    chart_content.classList.add('swipeIn');
-  });
-
-  text_button.addEventListener("click", () => {
-    if (text_content.style.display !== 'none') return;
-    chart_content.classList.remove('swipeIn');
-    chart_button.classList.remove('button-active');
-    text_button.classList.add('button-active');
-
-    chart_content.style.display = 'none';
-    text_content.style.display = 'flex';
-    text_content.classList.add('swipeIn');
-  });
 });

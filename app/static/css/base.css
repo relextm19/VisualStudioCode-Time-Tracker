@@ -60,52 +60,6 @@
     text-shadow: 1px 1px 4px white;
     display: inline-block;
 }
-.lang-wrap {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin-top: 3rem;
-}
-
-.img-name-wrap{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    font-size: 1.5rem;
-    width: 10rem;
-}
-
-.lang-time{
-    color:white;
-}
-
-@keyframes swipeIn {
-    from {
-        transform: translateX(100%);
-    }
-    to {
-        transform: translateX(0);
-    }
-}
-
-.swipeIn {
-    animation: swipeIn 0.5s forwards;
-}
-
-.text-content{
-    margin-top: 3rem;
-}
-
-.chart-content{
-    display: none;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    margin-top: 3rem;
-}
-
 .buttons {
     display: flex;
     justify-content: center;
@@ -137,4 +91,32 @@
     background-color: #016e1e;
     width: 10.5rem;
     height: 110%;
+}
+
+.chart-content{
+    display: none;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 3rem;
+}
+@keyframes swipeIn {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.swipeIn {
+    animation: swipeIn 0.5s forwards;
+}
+
+#chart{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

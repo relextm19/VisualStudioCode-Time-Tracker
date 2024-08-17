@@ -112,24 +112,31 @@ def languages():
             total_time += session_time
     #sort languages by time
     language_times = dict(sorted(language_times.items(), key=lambda item: item[1], reverse=True))
-    return render_template('languages.html', header_text = "Language Times", language_times=language_times, total_time=total_time)
+    print(language_times)
+    return render_template('languages.html', language_times=language_times, total_time=total_time)
 
 @app.route('/projects')
 def projects():
     try:
+        projects = {}
+        total_time = 0
         results = db.session.query(
             Sessions.project,
             db.func.sum(Sessions.endTime - Sessions.startTime).label('total_time')
         ).filter(Sessions.project.isnot(None)).group_by(Sessions.project).all()
 
-        projects = [{'project': result.project, 'total_time': result.total_time} for result in results]
-        total_time = sum(result.total_time or 0 for result in results)
-        
-        return render_template('projects.html', header_text="Project Times", projects=projects, total_time=total_time)
+        for result in results:
+            projects[result.project] = result.total_time / 1000
+            total_time += result.total_time / 1000
+
+        # Sort projects by time
+        projects = dict(sorted(projects.items(), key=lambda item: item[1], reverse=True))
+
+        return render_template('projects.html', projects=projects, total_time=total_time)
     except Exception as e:
         print(e)
         return jsonify({'message': 'An error occurred'}), 500
-        
+    
 def format_time(time):
     hours = time // 3600
     minutes = (time % 3600) // 60
