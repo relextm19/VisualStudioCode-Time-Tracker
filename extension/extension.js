@@ -41,6 +41,7 @@ async function activate(context) {
 }
 
 async function startSession() {
+    console.log("start session");
     let payload = { 
         'language' : data.languageName,
         'project' : data.projectName,

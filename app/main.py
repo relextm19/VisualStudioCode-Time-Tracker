@@ -5,7 +5,7 @@ import hashlib
 import time
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = r'sqlite:///C:/Users/Mateusz/Desktop/code/VScodeTimeTracker/app/db/database.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = r'sqlite:///db/database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'secret'
 CORS(app)
