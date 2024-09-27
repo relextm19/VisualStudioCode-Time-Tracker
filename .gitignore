@@ -1,7 +1,20 @@
+# Ignore node_modules directories
 /app/node_modules
 /extension/node_modules
-extension\test
-extension\.vscode
-extension\vsc-extension-quickstart.md
-serverLaunch.bat
-extension\.vscode-test.mjs
+
+# Ignore test directories
+/extension/test
+
+# Ignore .vscode directories
+/extension/.vscode
+
+# Ignore specific files
+/extension/.gitignore
+/extension/.yarnrc
+/extension/vsc-extension-quickstart.md
+
+# Ignore specific patterns
+/extension/jsconfig.json
+/extension/**/*.map
+/extension/.eslintrc.json
+/extension/.vscode-test.*
