@@ -48,7 +48,7 @@ async function startSession() {
         'startTime' : data.startingTime,
         'startDate': new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long',   day: 'numeric', timeZone: 'Europe/Warsaw' }),
     }
-    await fetch('http://127.0.0.1:5000/startSession', {
+    await fetch('http://127.0.0.1:8080/startSession', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ async function endSession() {
         'endTime': Date.now(),
         'endDate': new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long',   day: 'numeric', timeZone: 'Europe/Warsaw' }),
     }
-    await fetch('http://127.0.0.1:5000/endSession', {
+    await fetch('http://127.0.0.1:8080/endSession', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

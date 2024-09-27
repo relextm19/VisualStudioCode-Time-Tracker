@@ -18,11 +18,21 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/startSession", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("start Session")
 		startSession(w, r, db)
 	}).Methods("POST")
 	router.HandleFunc("/endSession", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("end Session")
 		endSession(w, r, db)
 	}).Methods("POST")
+	router.HandleFunc("/getLanguages", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("get languages")
+		getLanguages(w, r, db)
+	})
+	router.HandleFunc("/getProjects", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("get projects")
+		getProjects(w, r, db)
+	})
 
-	log.Fatal(http.ListenAndServe(":5000", router))
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
