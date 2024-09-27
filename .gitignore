@@ -1,5 +1,7 @@
 /app/node_modules
 /extension/node_modules
-/extension/test
-/extension/.vscode
+extension\test
+extension\.vscode
+extension\vsc-extension-quickstart.md
 serverLaunch.bat
+extension\.vscode-test.mjs
