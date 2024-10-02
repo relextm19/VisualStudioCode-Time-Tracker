@@ -17,6 +17,8 @@ func main() {
 	defer db.Close()
 
 	router := mux.NewRouter()
+	router.Use(corsMiddleware)
+
 	router.HandleFunc("/startSession", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("start Session")
 		startSession(w, r, db)

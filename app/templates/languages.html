@@ -1,40 +1,41 @@
-{% extends "template.html" %}
-{% block styles %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/languages.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/menu.css') }}">
-{% endblock %}
-{% block header %}
-    <h1>Languages</h1>
-{% endblock %}
-{% block content %}
-    <div class="text-content">
-        <div class="lang-stats">
-            {% for name, time in language_times.items() %}
-            
-            <div class="lang-wrap">
-                <div class="img-name-wrap">
-                    <img src="{{ url_for('static', filename='img/' + name + '.png') }}" alt="{{ name }}" width="70">
-                    <h3 class="lang-name">{{ name }}</h3>
-                </div>
-                <div class="lang-time-wrap">
-                    <h3 class="lang-time time-div" data-name="{{ name }}" data-time-seconds="{{ time }}">{{ time }}</h3>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dashboard</title>
+        <link rel="stylesheet" href="../static/css/base.css">
+        <link rel="stylesheet" href="../static/css/languages.css">
+        <link rel="stylesheet" href="../static/css/menu.css">
+    </head>
+    <body>
+        <div id="container">
+            <div class="header">
+            </div>
+            <div class="total-time">
+                <div class="wrap">
+                    <h2 class="total-time-h">Total:&nbsp;</h2>
+                    <h2 class="total-time-p" data-time-seconds>69420</h2>
                 </div>
             </div>
-        
-            {% endfor %}
+            <div class="buttons">
+                <button id="text-button" class="button button-active">Text</button>
+                <button id="chart-button" class="button">Chart</button>
+            </div>
+            <div class="menu">
+                <nav>
+                    <ul>
+                        <a href="#"><li>languages</li></a>
+                        <a href="#"><li>projects</li></a>
+                    </ul>
+                </nav>
+            </div>
+           <div class="text-content">
+           </div>      
         </div>
-    </div>
-    <div class="chart-content">
-        <canvas id="chart"></canvas>    
-    </div>
-{% endblock %}
-{% block scripts %}
-    <script>
-        var languages = {{ language_times|tojson }};
-        var projects = null;
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ url_for('static', filename='js/parse.js') }}"></script>    
-    <script src="{{ url_for('static', filename='js/chart.js') }}"></script>    
-    <script src="{{ url_for('static', filename='js/menu.js') }}"></script>    
-{% endblock %}
+        <script src="../static/js/menu.js"></script>
+        <script type="module" src="../static/js/projects.js"></script>
+    </body>
+</html>
+    

@@ -9,7 +9,7 @@
 /extension/.vscode
 
 # Ignore specific files
-/extension/.gitignore
+/extension/.vscodeignore
 /extension/.yarnrc
 /extension/vsc-extension-quickstart.md
 
