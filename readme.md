@@ -27,7 +27,7 @@ This tool allows you to track your activity within Visual Studio Code by recordi
 ## Usage
 
 - After completing the setup, every time you open a file in Visual Studio Code, it will be registered by the time tracker.
-- To view your usage statistics, open your browser and go to [127.0.0.1:5000](http://127.0.0.1:5000) or [localhost:5000](http://localhost:5000).
+- To view your usage statistics, open your browser and go to [127.0.0.1:8080/lnaguages](http://127.0.0.1:8080/languages) or [localhost:8080/languages](http://localhost:8080/languages).
 
 ## Contribution
 
