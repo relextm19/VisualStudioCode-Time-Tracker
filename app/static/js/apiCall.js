@@ -5,7 +5,6 @@ export async function getLanguagesData() {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log('Fetched data:', data);
     return data;
 }
 export async function getProjectsData() {
@@ -14,6 +13,5 @@ export async function getProjectsData() {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log('Fetched data:', data);
     return data;
 }

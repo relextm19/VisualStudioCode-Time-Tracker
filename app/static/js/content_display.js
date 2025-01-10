@@ -1,13 +1,15 @@
+import { mainData } from "./mainData.js";
+
 function format_time(time) {
     return time / 3600;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   let chartInitialized = false;
-  let chart_button = document.querySelector("#chart-button");
-  let text_button = document.querySelector("#text-button");
-  let text_content = document.querySelector(".text-content");
-  let chart_content = document.querySelector(".chart-content");
+  const chart_button = document.querySelector("#chart-button");
+  const text_button = document.querySelector("#text-button");
+  const text_content = document.querySelector(".text-content");
+  const chart_content = document.querySelector(".chart-content");
   chart_content.style.display = 'none';
 
 
@@ -19,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     gradient.addColorStop(0, '#005517'); 
     gradient.addColorStop(1, '#23541c'); 
 
-    var rawData = projects ?? languages;
+    const rawData = mainData.projects ?? mainData.languages;
 
     const labels = Object.keys(rawData);
     const data = Object.values(rawData).map((time) => format_time(time));
@@ -53,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   chart_button.addEventListener("click", () => {
-    console.log(chart_content.style.display);
+    console.log("click")
     if (chart_content.style.display !== 'none') return; 
 
     text_content.classList.remove('swipeIn');
@@ -71,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   text_button.addEventListener("click", () => {
+    console.log("click")
     if (text_content.style.display !== 'none') return;
     
     chart_content.classList.remove('swipeIn');
@@ -79,6 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     chart_content.style.display = 'none';
     text_content.style.display = 'flex';
+    text_content.style.flexDirection = 'column'
     text_content.classList.add('swipeIn');
   });
 });

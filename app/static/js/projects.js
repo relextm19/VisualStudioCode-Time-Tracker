@@ -1,17 +1,17 @@
 import { getProjectsData } from "./apiCall.js";
 import { format_time } from "./parse.js";
+import { mainData } from "./mainData.js";
 
 
-let totalTime = 0;
 document.addEventListener('DOMContentLoaded', async () => {
-    const projects = await getProjectsData();
+    mainData.projects = await getProjectsData();
 
-    const sortedProjects = Object.entries(projects).sort((a, b) => b[1] - a[1]);
+    const sortedProjects = Object.entries(mainData.projects).sort((a, b) => b[1] - a[1]);
     renderProjects(sortedProjects);
 
     //set the total time
     const totalTimeElement = document.querySelector('.total-time-p');
-    totalTimeElement.textContent = format_time(totalTime);
+    totalTimeElement.textContent = format_time(mainData.totalTime);
 });
 function renderProjects(projects){
     for(let [name,time] of projects){
@@ -33,9 +33,9 @@ function renderProjects(projects){
         wrapDiv.appendChild(projectTime);
 
         //append to document
-        document.querySelector('.lang-stats').appendChild(wrapDiv);
+        document.querySelector('.text-content').appendChild(wrapDiv);
 
         //update total time
-        totalTime += time;
+        mainData.totalTime += time;
     }
 }

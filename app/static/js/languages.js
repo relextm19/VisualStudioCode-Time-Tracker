@@ -1,18 +1,20 @@
 import { getLanguagesData } from "./apiCall.js";
 import { format_time } from "./parse.js";
+import { mainData } from "./mainData.js";
 
-const totalTime = 0;
+prepareAndRender();
 
-document.addEventListener('DOMContentLoaded', async () => {
-    const languages = await getLanguagesData();
-    const sortedLanguages = Object.entries(languages).sort((a, b) => b[1] - a[1]);
+async function prepareAndRender(){
+    mainData.languages = await getLanguagesData();
+    const sortedLanguages = Object.entries(mainData.languages).sort((a, b) => b[1] - a[1]);
 
     renderLanguages(sortedLanguages);
 
     //set the total time
     const totalTimeElement = document.querySelector('.total-time-p');
-    totalTimeElement.textContent = format_time(totalTime);
-});
+    totalTimeElement.textContent = format_time(mainData.totalTime);
+}
+
 function renderLanguages(languages){
     for(let [name, time] of languages){
         
@@ -42,7 +44,7 @@ function renderLanguages(languages){
         langTime.classList.add('lang-time');
         langTime.textContent = format_time(time);
         //update the global total time
-        totalTime += time;
+        mainData.totalTime += time;
 
         //append img-name-wrap and time-element to lang-wrap
         langWrapDiv.appendChild(imgNameWrapDiv);
