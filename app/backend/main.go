@@ -17,6 +17,8 @@ func main() {
 	defer db.Close()
 
 	router := mux.NewRouter()
+	router.Use(corsMiddleware)
+
 	router.HandleFunc("/startSession", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("start Session")
 		startSession(w, r, db)
@@ -33,6 +35,16 @@ func main() {
 		log.Println("get projects")
 		getProjects(w, r, db)
 	})
+	router.HandleFunc("/projects", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("projects")
+		http.ServeFile(w, r, "../static/html/projects.html")
+	})
+	router.HandleFunc("/languages", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("languages")
+		http.ServeFile(w, r, "../static/html/languages.html")
+	})
+
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

@@ -5,20 +5,18 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Dashboard</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-        {% block styles %}
-        {% endblock %}
+        <link rel="stylesheet" href="../static/css/base.css">
+        <link rel="stylesheet" href="../static/css/languages.css">
+        <link rel="stylesheet" href="../static/css/menu.css">
     </head>
     <body>
         <div id="container">
             <div class="header">
-                {% block header %}
-                {% endblock %}
             </div>
             <div class="total-time">
                 <div class="wrap">
                     <h2 class="total-time-h">Total:&nbsp;</h2>
-                    <h2 class="total-time-p" data-time-seconds="{{ total_time }}">{{ (total_time / 3600)|round(2) }}h</h2>
+                    <h2 class="total-time-p" data-time-seconds>69420</h2>
                 </div>
             </div>
             <div class="buttons">
@@ -28,17 +26,21 @@
             <div class="menu">
                 <nav>
                     <ul>
-                        <a href="{{ url_for('languages') }}"><li>Languages</li></a>
-                        <a href="{{ url_for('projects') }}"><li>Projects</li></a>
+                        <a href="/languages"><li>languages</li></a>
+                        <a href="/projects"><li>projects</li></a>
                     </ul>
                 </nav>
             </div>
-            {% block content %}
-            
-            {% endblock %}
+            <div class="text-content">
+           </div>         
+            <div class="chart-content">
+                <canvas id="chart"></canvas>
+            </div>
         </div>
-        {% block scripts %}
-        {% endblock %}    
+        <script src="../static/js/menu.js"></script>
+        <script type="module" src="../static/js/languages.js"></script>
+        <script type="module" src="../static/js/content_display.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </body>
 </html>
     
