@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func mapData(key string, db *sql.DB) (map[string]uint64, error) {
+func mapData(key string, db *sql.DB) (map[string]uint64, error) { //here we collect the time based on languages
 	rows, err := db.Query(fmt.Sprintf("SELECT %s, startTime, endTime FROM Sessions", key))
 	if err != nil {
 		return nil, err

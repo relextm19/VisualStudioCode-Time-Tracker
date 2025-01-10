@@ -2,18 +2,19 @@ import { getProjectsData } from "./apiCall.js";
 import { format_time } from "./parse.js";
 
 
-var totalTime = 0;
+let totalTime = 0;
 document.addEventListener('DOMContentLoaded', async () => {
-    let projects = await getProjectsData();
+    const projects = await getProjectsData();
 
-    renderProjects(projects);
+    const sortedProjects = Object.entries(projects).sort((a, b) => b[1] - a[1]);
+    renderProjects(sortedProjects);
 
     //set the total time
-    var totalTimeElement = document.querySelector('.total-time-p');
+    const totalTimeElement = document.querySelector('.total-time-p');
     totalTimeElement.textContent = format_time(totalTime);
 });
 function renderProjects(projects){
-    for(let [name,time] of Object.entries(projects)){
+    for(let [name,time] of projects){
 
         //create wrapper
         let wrapDiv = document.createElement('div');

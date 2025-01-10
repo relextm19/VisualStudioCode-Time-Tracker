@@ -18,3 +18,5 @@
 /extension/**/*.map
 /extension/.eslintrc.json
 /extension/.vscode-test.*
+
+serverLaunch.bat
