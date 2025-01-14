@@ -8,11 +8,10 @@
         <link rel="stylesheet" href="../static/css/base.css">
         <link rel="stylesheet" href="../static/css/languages.css">
         <link rel="stylesheet" href="../static/css/menu.css">
+        <link rel="stylesheet" href="../static/css/main.css">
     </head>
     <body>
         <div id="container">
-            <div class="header">
-            </div>
             <div class="total-time">
                 <div class="wrap">
                     <h2 class="total-time-h">Total:&nbsp;</h2>
@@ -23,19 +22,21 @@
                 <button id="text-button" class="button button-active">Text</button>
                 <button id="chart-button" class="button">Chart</button>
             </div>
-            <div class="menu">
-                <nav>
-                    <ul>
-                        <a href="/languages"><li>languages</li></a>
-                        <a href="/projects"><li>projects</li></a>
-                    </ul>
-                </nav>
-            </div>
-            <div class="text-content">
-           </div>         
-            <div class="chart-content">
-                <canvas id="chart"></canvas>
-            </div>
+            <main>
+                <div class="text-content">
+                </div>         
+                <div class="chart-content">
+                    <canvas id="chart"></canvas>
+                 </div>
+            </main>
+            <nav>
+                <div id="menu-icon">
+                    <div class="menu-bar"></div>
+                    <div class="menu-bar"></div>
+                </div>
+                <a href="/languages">languages</a>
+                <a href="/projects">projects</a>
+            </nav>
         </div>
         <script src="../static/js/menu.js"></script>
         <script type="module" src="../static/js/languages.js"></script>

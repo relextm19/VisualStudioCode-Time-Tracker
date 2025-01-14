@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () =>{
-    var menuDiv = document.querySelector(".menu");
-    var menu = document.querySelector("nav");
+    const menuDiv = document.querySelector(".menu");
+    const menu = document.querySelector("nav");
 
     menuDiv.onmouseenter = function(){ 
         menu.classList.remove("menuDisactive");
