@@ -1,0 +1,9 @@
+CREATE TABLE Sessions(
+    id TEXT PRIMARY KEY,
+    startDate TEXT NOT NULL,
+    endDate TEXT,
+    startTime INTEGER,
+    endTime INTEGER,
+    language TEXT NOT NULL,
+    project TEXT NOT NULL
+)
