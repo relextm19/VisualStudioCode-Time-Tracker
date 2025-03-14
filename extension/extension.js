@@ -7,7 +7,6 @@ require('isomorphic-fetch');
 
 let data;
 
-
 async function activate(context) {
     data = {
         languageName: vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.languageId : "",
@@ -46,7 +45,7 @@ async function startSession() {
         'language' : data.languageName,
         'project' : data.projectName,
         'startTime' : data.startingTime,
-        'startDate': new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long',   day: 'numeric', timeZone: 'Europe/Warsaw' }),
+        'startDate': new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/Warsaw' }),
     }
     await fetch('http://127.0.0.1:8080/startSession', {
         method: 'POST',
@@ -80,10 +79,6 @@ function updateData() {
     if (vscode.window.activeTextEditor) {
         newLanguageName = vscode.window.activeTextEditor.document.languageId;
         newProjectName = vscode.workspace.rootPath.split('\\').pop();
-        if(newLanguageName !== data.languageName) console.log("lang updated");
-        if(newProjectName !== data.projectName){
-            console.log(newProjectName, data.projectName);
-        }
         if (newLanguageName !== data.languageName || newProjectName !== data.projectName) {
             updated = true;
         }
