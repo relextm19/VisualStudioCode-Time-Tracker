@@ -22,7 +22,7 @@ const currentView = computed(() =>{
 </script>
 
 <template>
-    <div class="min-h-screen bg-stone-950">
+    <div class="min-h-screen bg-black">
         <a href="#/" class="">Home</a> |
         <a href="#/login" class="text-white">Login</a> |
         <a href="#/non-existent-path">Broken Link</a>
@@ -31,5 +31,8 @@ const currentView = computed(() =>{
 </template>
 
 <style scoped>
-
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+    *{
+        font: 'Roboto', sans-serif;
+    }
 </style>

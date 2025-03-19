@@ -1,15 +1,23 @@
 <script setup lang="ts">
-
 </script>
 
 <template>
-    <div class="flex justify-center items-center h-screen">
-        <form class="bg-black w-3/10 h-3/5 rounded-lg shadow-md shadow-white flex flex-col justify-center items-center gap-15" action="">
-            <h1 class="text-white text-2xl">Welcome!</h1>
-            <img src="../assets/logo.png" alt="" class="w-40 h-25">
-            <input class="bg-white w-7/10 h-8 rounded-md shadow-md shadow-gray-500 transition-all duration-200 focus:outline-none focus:-translate-y-0.25 focus:w-71/100" type="email" placeholder="Email">
-            <input class="bg-white w-7/10 h-8 rounded-md shadow-md shadow-gray-500 transition-all duration-200 focus:outline-none focus:-translate-y-0.25 focus:w-71/100" type="password" placeholder="Password">
-            <input class="bg-none text-white border border-white w-2/10 h-8 rounded-md shadow-md shadow-gray-500 cursor-pointer transition-all duration-200 hover:text-black hover:bg-white" type="submit" value="Login">
-        </form>
-    </div>
+  <div class="h-screen flex justify-center items-center">
+    <form class="bg-black h-1/3 w-full max-w-xs p-8 rounded-lg shadow-lg flex flex-col justify-evenly gap-6 border border-white" action="">
+      <h1 class="text-white text-3xl font-bold text-center">LOGIN</h1>
+      <img src="../assets/logo2.png" alt="Logo" class="mx-auto w-32 h-auto">
+      <input 
+        class="bg-black text-white w-full h-10 rounded-md px-3 border border-white focus:outline-none focus:shadow focus:scale-101 shadow-white transition duration-200"
+        type="email" 
+        placeholder="Email">
+      <input 
+        class="bg-black text-white w-full h-10 rounded-md px-3 border border-white focus:outline-none focus:shadow shadow-white transition duration-200"
+        type="password" 
+        placeholder="Password">
+      <input 
+        class="bg-transparent text-white border border-white w-full h-10 rounded-md hover:bg-white hover:text-black hover:scale-101 transition duration-200 cursor-pointer"
+        type="submit" 
+        value="Login">
+    </form>
+  </div>
 </template>
