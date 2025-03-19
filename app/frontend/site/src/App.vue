@@ -22,10 +22,12 @@ const currentView = computed(() =>{
 </script>
 
 <template>
-    <a href="#/">Home</a> |
-    <a href="#/login">Login</a> |
-    <a href="#/non-existent-path">Broken Link</a>
-    <component :is="currentView" />
+    <div class="min-h-screen bg-gradient-to-b from-black to-stone-900">
+        <a href="#/" class="">Home</a> |
+        <a href="#/login" class="text-white">Login</a> |
+        <a href="#/non-existent-path">Broken Link</a>
+        <component :is="currentView" />
+    </div>
 </template>
 
 <style scoped>
