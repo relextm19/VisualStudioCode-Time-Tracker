@@ -22,7 +22,7 @@ const currentView = computed(() =>{
 </script>
 
 <template>
-    <div class="min-h-screen bg-gradient-to-b from-black to-stone-900">
+    <div class="min-h-screen bg-stone-950">
         <a href="#/" class="">Home</a> |
         <a href="#/login" class="text-white">Login</a> |
         <a href="#/non-existent-path">Broken Link</a>
