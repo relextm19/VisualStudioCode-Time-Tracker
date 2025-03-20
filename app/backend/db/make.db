@@ -1,9 +1,5 @@
-CREATE TABLE Sessions(
-    id TEXT PRIMARY KEY,
-    startDate TEXT NOT NULL,
-    endDate TEXT,
-    startTime INTEGER,
-    endTime INTEGER,
-    language TEXT NOT NULL,
-    project TEXT NOT NULL
-)
+CREATE TABLE Users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    password TEXT NOT NULL,
+    email TEXT NOT NULL
+);
