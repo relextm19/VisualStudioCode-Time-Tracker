@@ -49,7 +49,7 @@ const handleSubmit = () => {
         </button>
     </div>
     <input 
-        class="bg-transparent text-white border border-white w-full h-10 rounded-md hover:bg-white hover:text-black hover:scale-101 transition duration-200 cursor-pointer"
+        class="bg-transparent text-white border border-white w-full h-10 rounded-md hover:bg-white hover:text-black transition duration-200 cursor-pointer"
         type="submit" 
         value="Login"
     >
