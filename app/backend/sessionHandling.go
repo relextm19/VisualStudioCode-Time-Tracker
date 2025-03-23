@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 )
 
@@ -47,8 +46,6 @@ func endSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	log.Println(string(body))
 
 	err = json.Unmarshal(body, &session)
 	if err != nil {
