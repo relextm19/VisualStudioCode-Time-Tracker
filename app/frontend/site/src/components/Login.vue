@@ -52,7 +52,7 @@ const handleSubmit = () => {
     >
     <div class="text-center">
         <p class="text-white underline">
-            No account yet?
+            <router-link to="/register-info" class="cursor-pointer">No account yet?</router-link>
         </p>
     </div>
     </form>

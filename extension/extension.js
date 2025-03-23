@@ -1,99 +1,115 @@
 const vscode = require('vscode');
-require('isomorphic-fetch');
+const fetch = require('isomorphic-fetch');
+const { promptUserCredentials } = require('./userCredentials');
 
-/**
- * @param {vscode.ExtensionContext} context
- */
-
-let data;
+let sessionData = {
+  language: '',
+  project: '',
+  startTime: null,
+};
 
 async function activate(context) {
-    data = {
-        languageName: vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.languageId : "",
-        projectName: vscode.workspace.rootPath ? vscode.workspace.rootPath.split('\\').pop() : "",
-        startingTime: Date.now(),
-    };
-    await startSession();
-    const interval = setInterval(async () => {
-        if (vscode.window.activeTextEditor) {        
-            let { newLanguageName, newProjectName, updated } = updateData();
-            if (updated) {
-                await endSession();
-                data.languageName = newLanguageName;
-                data.projectName = newProjectName;
-                data.startingTime = Date.now();
-                await startSession();
-            }
-        } else{
-            if(data.languageName !== ""){
-                await endSession();
-                data.languageName = "";
-            }
-        }
-    }, 2000);
+  // Prompt for credentials if not already stored.
+  const savedCredentials = context.globalState.get('userCredentials');
+  if (!savedCredentials) {
+    await promptUserCredentials(context);
+  }
+  
+  // Initialize session data from the active editor and workspace.
+  const activeEditor = vscode.window.activeTextEditor;
+  sessionData.language = activeEditor ? activeEditor.document.languageId : '';
+  sessionData.project = vscode.workspace.rootPath ? getProjectName(vscode.workspace.rootPath) : '';
+  sessionData.startTime = Date.now();
 
-    context.subscriptions.push({
-        dispose: () => {
-            clearInterval(interval);
-        }
-    });
+  await startSession();
+
+  // Check for changes every 2 seconds.
+  const interval = setInterval(async () => {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (activeEditor) {
+      const { newLanguage, newProject, updated } = getUpdatedSessionData();
+      if (updated) {
+        await endSession();
+        sessionData.language = newLanguage;
+        sessionData.project = newProject;
+        sessionData.startTime = Date.now();
+        await startSession();
+      }
+    } else if (sessionData.language !== '') {
+      // No active editor, so end the session.
+      await endSession();
+      sessionData.language = '';
+    }
+  }, 2000);
+
+  context.subscriptions.push({
+    dispose: () => clearInterval(interval)
+  });
+}
+
+function getProjectName(rootPath) {
+  return rootPath.split('\\').pop();
+}
+
+// Checks if the language or project has changed.
+function getUpdatedSessionData() {
+  const activeEditor = vscode.window.activeTextEditor;
+  if (!activeEditor) {
+    return { newLanguage: '', newProject: '', updated: false };
+  }
+  const newLanguage = activeEditor.document.languageId;
+  const newProject = vscode.workspace.rootPath ? getProjectName(vscode.workspace.rootPath) : '';
+  const updated = newLanguage !== sessionData.language || newProject !== sessionData.project;
+  return { newLanguage, newProject, updated };
 }
 
 async function startSession() {
-    console.log("start session");
-    let payload = { 
-        'language' : data.languageName,
-        'project' : data.projectName,
-        'startTime' : data.startingTime,
-        'startDate': new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/Warsaw' }),
-    }
-    await fetch('http://127.0.0.1:8080/startSession', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-    });
+  const payload = {
+    language: sessionData.language,
+    project: sessionData.project,
+    startTime: sessionData.startTime,
+    startDate: new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'Europe/Warsaw'
+    }),
+  };
+
+  await fetch('http://127.0.0.1:8080/startSession', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
 }
 
 async function endSession() {
-    let payload = {
-        'language': data.languageName,
-        'project': data.projectName,
-        'endTime': Date.now(),
-        'endDate': new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long',   day: 'numeric', timeZone: 'Europe/Warsaw' }),
-    }
-    await fetch('http://127.0.0.1:8080/endSession', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-    });
+  const payload = {
+    language: sessionData.language,
+    project: sessionData.project,
+    endTime: Date.now(),
+    endDate: new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'Europe/Warsaw'
+    }),
+  };
+
+  await fetch('http://127.0.0.1:8080/endSession', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
 }
-
-function updateData() {
-    let updated = false;
-    let newLanguageName, newProjectName;
-
-    if (vscode.window.activeTextEditor) {
-        newLanguageName = vscode.window.activeTextEditor.document.languageId;
-        newProjectName = vscode.workspace.rootPath.split('\\').pop();
-        if (newLanguageName !== data.languageName || newProjectName !== data.projectName) {
-            updated = true;
-        }
-    }
-    return { newLanguageName, newProjectName, updated };
-}
-
 
 async function deactivate() {
-    if (data.languageName !== "") {
-        await endSession();
-    }
+  if (sessionData.language !== '') {
+    await endSession();
+  }
 }
 
 module.exports = {
-    activate,
-    deactivate
+  activate,
+  deactivate,
 };
