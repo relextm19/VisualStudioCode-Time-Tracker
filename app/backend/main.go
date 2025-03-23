@@ -25,12 +25,17 @@ func main() {
 	router.HandleFunc("/endSession", func(w http.ResponseWriter, r *http.Request) {
 		endSession(w, r, db)
 	}).Methods("POST")
+	router.HandleFunc("/signUp", func(w http.ResponseWriter, r *http.Request) {
+		signUp(w, r, db)
+	}).Methods("POST")
+
 	router.HandleFunc("/getLanguages", func(w http.ResponseWriter, r *http.Request) {
 		getLanguages(w, r, db)
 	})
 	router.HandleFunc("/getProjects", func(w http.ResponseWriter, r *http.Request) {
 		getProjects(w, r, db)
 	})
+
 	router.HandleFunc("/projects", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "../static/html/projects.html")
 	})
