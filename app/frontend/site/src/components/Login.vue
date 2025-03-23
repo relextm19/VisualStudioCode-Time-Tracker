@@ -32,10 +32,7 @@ const handleSubmit = () => {
             placeholder="Password"
             v-model="password"
         >
-        <button
-            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white w-5"
-            @click="showPassword = !showPassword"
-        >
+        <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white w-5" @click="showPassword = !showPassword">
             <img 
                 src="../assets/eye-crossed.png" alt="eye" 
                 class="filter invert"
@@ -53,6 +50,11 @@ const handleSubmit = () => {
         type="submit" 
         value="Login"
     >
+    <div class="text-center">
+        <p class="text-white underline">
+            No account yet?
+        </p>
+    </div>
     </form>
   </div>
 </template>

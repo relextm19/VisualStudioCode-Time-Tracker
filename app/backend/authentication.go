@@ -18,8 +18,8 @@ func checkUserExists(db *sql.DB, email string) (error, bool) {
 	return nil, exists
 }
 
-func createUser(db *sql.DB, userInfo User) error {
-	_, err := db.Exec("INSERT INTO USERS (email, password) VALUES(?, ?)", userInfo.Email, userInfo.Password)
+func createUser(db *sql.DB, user User) error {
+	_, err := db.Exec("INSERT INTO USERS (email, password) VALUES(?, ?)", user.Email, user.Password)
 
 	if err != nil {
 		return err

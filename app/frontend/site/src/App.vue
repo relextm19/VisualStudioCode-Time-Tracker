@@ -1,32 +1,14 @@
 <script setup lang="ts">
-import {ref, type Component, computed} from 'vue'
-import Login from './components/Login.vue';
-import NotFound from './components/NotFound.vue';
-import Home from './components/Home.vue';
-
-const routes: Record<string, Component> = {
-    '/': Home,
-    '/login': Login,
-}
-
-const currentPath = ref(window.location.hash.slice(1) || '/');
-
-window.addEventListener('hashchange', () =>{
-    currentPath.value = window.location.hash.slice(1) || '/';
-})
-
-const currentView = computed(() =>{
-    return routes[currentPath.value || '/'] || NotFound;
-})
 
 </script>
 
 <template>
     <div class="min-h-screen bg-black">
-        <a href="#/" class="">Home</a> |
-        <a href="#/login" class="text-white">Login</a> |
-        <a href="#/non-existent-path">Broken Link</a>
-        <component :is="currentView" />
+        <p class="text-white underline flex gap-2">
+            <router-link to="/Login">Login</router-link>
+            <router-link to="/">Home</router-link>
+        </p>
+        <router-view></router-view>
     </div>
 </template>
 
