@@ -23,9 +23,8 @@ async function promptUserCredentials(context) {
 
   const emailUsed = await checkEmailUsed(email);
   if(emailUsed){
-    let password = await promptPassword();
     while (true) {
-      password = await promptPassword();
+      let password = await promptPassword();
       if (password.trim() === '') {
         vscode.window.showErrorMessage('Password cannot be empty.');
         continue;
