@@ -11,9 +11,9 @@ let sessionData = {
 async function activate(context) {
   // Prompt for credentials if not already stored.
   const savedCredentials = context.globalState.get('userCredentials');
-  if (!savedCredentials) {
+  // if (!savedCredentials) {
     await promptUserCredentials(context);
-  }
+  // }
   
   // Initialize session data from the active editor and workspace.
   const activeEditor = vscode.window.activeTextEditor;

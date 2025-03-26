@@ -20,32 +20,24 @@ async function promptUserCredentials(context) {
   if (!email) {
     return;
   }
-  
-  const password = await vscode.window.showInputBox({
-    prompt: 'Enter your password',
-    placeHolder: 'Password',
-    password: true,
-    ignoreFocusOut: true,
-  });
-  
-  if (!password) {
-    return;
-  }
-  
-  const payload = { email, password };
-  
-  try {
-    await fetch('http://127.0.0.1:8080/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    // Save credentials for future runs.
-    await context.globalState.update('userCredentials', { email, password });
-    vscode.window.showInformationMessage('Registration successful.');
-  } catch (error) {
-    vscode.window.showErrorMessage('Failed to register credentials.');
-    console.error('Registration error:', error);
+
+  const emailUsed = await checkEmailUsed(email);
+  if(emailUsed){
+    while (true) {
+      let password = await promptPassword();
+      if (password.trim() === '') {
+        vscode.window.showErrorMessage('Password cannot be empty.');
+        continue;
+      }
+      if (!password) {
+        return;
+      }
+      if(await login(email, password, context)) return;
+      else{
+        vscode.window.showErrorMessage('Invalid email or password');
+        continue;
+      };
+    }
   }
 }
 
@@ -61,6 +53,16 @@ async function promptEmail() {
   return emailRegex.test(email) ? email : null;
 }
 
+async function promptPassword() {
+  const password = await vscode.window.showInputBox({
+    prompt: 'Enter your password',
+    placeHolder: 'Password',
+    password: true,
+    ignoreFocusOut: true,
+  });
+  return password;
+}
+
 async function checkEmailUsed(email){
   try{
     const response = await fetch('http://127.0.0.1:8080/checkUserExists', {
@@ -68,11 +70,36 @@ async function checkEmailUsed(email){
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     });
-    return response.json();
+    const data = await response.json();
+    return data['exists'];
   } catch (error) {
     console.error('Check email error:', error);
     return false;
   }
 }
+
+async function login(email, password, context) {
+  const payload = { email, password };
+  try {
+    const request = await fetch('http://127.0.0.1:8080/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if(!request.ok){
+      vscode.window.showErrorMessage('Invalid email or password');
+      return false;
+    }
+    // Save credentials for future runs.
+    await context.globalState.update('userCredentials', { email, password });
+    vscode.window.showInformationMessage('Login successful.');
+    return true;
+  } catch (error) {
+    vscode.window.showErrorMessage('Failed to login');
+    console.error('Login error:', error);
+    return false;
+  }
+}
+
 
 module.exports = { promptUserCredentials };

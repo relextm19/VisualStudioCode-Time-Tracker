@@ -28,6 +28,12 @@ func main() {
 	router.HandleFunc("/signUp", func(w http.ResponseWriter, r *http.Request) {
 		signUp(w, r, db)
 	}).Methods("POST")
+	router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		login(w, r, db)
+	}).Methods("POST")
+	router.HandleFunc("/checkUserExists", func(w http.ResponseWriter, r *http.Request) {
+		checkUserExistsEndpoint(w, r, db)
+	}).Methods("POST")
 
 	router.HandleFunc("/getLanguages", func(w http.ResponseWriter, r *http.Request) {
 		getLanguages(w, r, db)
