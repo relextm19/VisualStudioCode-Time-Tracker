@@ -37,11 +37,11 @@ async function promptUserCredentials(context) {
     }
   } else{
     while (true){
-      const password1 = await promptPassword("Enter new password");
+      const password1 = await promptPassword("Enter new password", "New password");
       if(password1 === undefined) return;
       if(checkPasswordEmpty(password1)) continue;
       
-      const password2 = await promptPassword("Confirm new password");
+      const password2 = await promptPassword("Confirm new password", "Confirm password");
       if(password2 === undefined) return;
       
       if(password1 !== password2){
@@ -74,10 +74,10 @@ async function promptEmail() {
   return emailRegex.test(email) ? email : null;
 }
 
-async function promptPassword(prompt) {
+async function promptPassword(prompt, placeHolder) {
   const password = await vscode.window.showInputBox({
     prompt: prompt || 'Enter your password',
-    placeHolder: 'Password',
+    placeHolder: placeHolder || 'Password',
     password: true,
     ignoreFocusOut: true,
   });
