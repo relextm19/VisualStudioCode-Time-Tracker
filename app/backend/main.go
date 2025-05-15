@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -17,7 +18,6 @@ func main() {
 	defer db.Close()
 
 	router := mux.NewRouter()
-	router.Use(corsMiddleware)
 
 	router.HandleFunc("/startSession", func(w http.ResponseWriter, r *http.Request) {
 		startSession(w, r, db)
@@ -49,7 +49,7 @@ func main() {
 		http.ServeFile(w, r, "../static/html/languages.html")
 	})
 
-	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))
+	handler := cors.Default().Handler(router)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080", handler))
 }
