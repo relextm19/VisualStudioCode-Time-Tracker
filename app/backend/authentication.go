@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -57,6 +58,7 @@ func signUp(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
+	log.Println("User registered")
 }
 
 func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
@@ -92,42 +94,5 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	} else {
 		http.Error(w, "User doesnt exist", http.StatusBadRequest)
 		return
-	}
-}
-
-func checkUserExistsEndpoint(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	var requestBody map[string]string
-
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Failed to read request body", http.StatusBadRequest)
-		return
-	}
-
-	err = json.Unmarshal(body, &requestBody)
-	if err != nil {
-		http.Error(w, "Invalid request format", http.StatusBadRequest)
-		return
-	}
-
-	// Extract the email from the map
-	email, ok := requestBody["email"]
-	if !ok || email == "" {
-		http.Error(w, "Email is required", http.StatusBadRequest)
-		return
-	}
-
-	err, exists := checkUserExists(db, email)
-	if err != nil {
-		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if exists {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"exists": true}`))
-	} else {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"exists": false}`))
 	}
 }

@@ -5,7 +5,6 @@ import EmailInput from './EmailInput.vue';
 
 const email = ref('');
 const password = ref('');
-const showPassword = ref(false);
 
 const handleSubmit = () => {
   console.log('Email:', email.value, 'Password:', password.value);  
