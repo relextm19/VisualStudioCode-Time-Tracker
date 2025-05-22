@@ -10,11 +10,10 @@ let sessionData = {
 
 async function activate(context) {
   // Prompt for credentials if not already stored.
-  // const savedCredentials = context.globalState.get('userCredentials');
-  // if (!savedCredentials) {
-  //   await promptUserCredentials(context);
-  // }
-  await promptUserCredentials(context);
+  const savedCredentials = context.globalState.get('userCredentials');
+  if (!savedCredentials) {
+    await promptUserCredentials(context);
+  }
 
   await startSession();
 

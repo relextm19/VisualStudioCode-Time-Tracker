@@ -6,8 +6,31 @@ import EmailInput from './EmailInput.vue';
 const email = ref('');
 const password = ref('');
 
-const handleSubmit = () => {
-  console.log('Email:', email.value, 'Password:', password.value);  
+const passwordInput = ref<InstanceType<typeof PasswordInput> | null>(null);
+const emailInput = ref<InstanceType<typeof EmailInput> | null>(null);
+
+async function handleSubmit() {
+  try{
+    const response = await fetch('http://localhost:8080/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value,
+      }),
+    });
+    if (response.ok){
+      console.log("logged in");
+    } else{
+      emailInput.value?.displayError();
+      passwordInput.value?.displayError();
+      console.log("test")
+    }
+  } catch(error){
+    console.error("Error during login:", error);
+  }
 }
 
 </script>
@@ -19,9 +42,9 @@ const handleSubmit = () => {
         @submit.prevent="handleSubmit"
     >
     <h1 class="text-white text-3xl font-bold text-center">LOGIN</h1>
-    <img src="../assets/logo2.png" alt="Logo" class="mx-auto w-32 h-auto">
-    <EmailInput v-model="email"></EmailInput>
-    <PasswordInput v-model="password"></PasswordInput>
+    <!-- <img src="../assets/logo2.png" alt="Logo" class="mx-auto w-32 h-auto"> -->
+    <EmailInput v-model="email" ref="emailInput"></EmailInput>
+    <PasswordInput v-model="password" ref="passwordInput"></PasswordInput>
     <input 
         class="bg-transparent text-white border border-white w-full h-10 rounded-md hover:bg-white hover:text-black transition duration-200 cursor-pointer"
         type="submit" 

@@ -1,0 +1,70 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import PasswordInput from './PasswordInput.vue';
+import EmailInput from './EmailInput.vue';
+
+const email = ref('');
+const password = ref('');
+const confirmPassword = ref('');
+
+const passwordInput = ref<InstanceType<typeof PasswordInput> | null>(null);
+const confirmPasswordInput = ref<InstanceType<typeof PasswordInput> | null>(null);
+const emailInput = ref<InstanceType<typeof EmailInput> | null>(null);
+
+
+async function handleSubmit() {
+  if (password.value !== confirmPassword.value) {
+    confirmPasswordInput.value?.displayError();
+    passwordInput.value?.displayError();
+    return;
+  }
+  try{
+    const response = await fetch('http://localhost:8080/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value,
+      }),
+    });
+    if (response.ok) {
+      console.log("registered");
+    } else {
+      emailInput.value?.displayError();
+      passwordInput.value?.displayError();
+      confirmPasswordInput.value?.displayError();
+      console.log("test")
+    }
+  } catch(error){
+    console.error("Error during registration:", error);
+  }
+}
+
+</script>
+
+<template>
+  <div class="h-screen flex justify-center items-center">
+    <form 
+        class="bg-black h-1/3 w-full max-w-xs p-8 rounded-lg shadow-lg flex flex-col justify-evenly gap-6 border border-white"
+        @submit.prevent="handleSubmit"
+    >
+    <h1 class="text-white text-3xl font-bold text-center">Register</h1>
+    <!-- <img src="../assets/logo2.png" alt="Logo" class="mx-auto w-32 h-auto"> -->
+    <EmailInput v-model="email" ref="emailInput"></EmailInput>
+    <PasswordInput v-model="password" ref="passwordInput"></PasswordInput>
+    <PasswordInput v-model="confirmPassword" placeholder="Confirm Password" ref="confirmPasswordInput"></PasswordInput>
+    <input 
+        class="bg-transparent text-white border border-white w-full h-10 rounded-md hover:bg-white hover:text-black transition duration-200 cursor-pointer"
+        type="submit" 
+        value="Register"
+    >
+    <div class="text-center">
+        <p class="text-white underline">
+            <router-link to="/login" class="cursor-pointer">Already got an account?</router-link>
+        </p>
+    </div>
+    </form>
+  </div>
+</template>

@@ -29,34 +29,40 @@ func createUser(db *sql.DB, user User) error {
 	return nil
 }
 
-func signUp(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+// FIXME: empty user is a valid user
+func register(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	var user User
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error reading request", http.StatusBadRequest)
+		log.Println("Error reading request")
 		return
 	}
 
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		http.Error(w, "Invalid request format", http.StatusBadRequest)
+		log.Println("Invalid request format")
 		return
 	}
 
 	err, exists := checkUserExists(db, user.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println("Error checking user existence")
 		return
 	}
 	if exists {
 		http.Error(w, "Email already used", http.StatusBadRequest)
+		log.Println("Email already used")
 		return
 	}
 
 	err = createUser(db, user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println("Error creating user")
 	}
 	log.Println("User registered")
 }

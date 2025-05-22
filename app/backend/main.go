@@ -25,8 +25,8 @@ func main() {
 	router.HandleFunc("/endSession", func(w http.ResponseWriter, r *http.Request) {
 		endSession(w, r, db)
 	}).Methods("POST")
-	router.HandleFunc("/signUp", func(w http.ResponseWriter, r *http.Request) {
-		signUp(w, r, db)
+	router.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+		register(w, r, db)
 	}).Methods("POST")
 	router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		login(w, r, db)
