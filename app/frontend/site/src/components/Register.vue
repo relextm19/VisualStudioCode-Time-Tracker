@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { watch } from 'vue';
 import PasswordInput from './PasswordInput.vue';
 import EmailInput from './EmailInput.vue';
+import router from '@/router';
 
 const email = ref('');
 const password = ref('');
@@ -11,11 +13,29 @@ const passwordInput = ref<InstanceType<typeof PasswordInput> | null>(null);
 const confirmPasswordInput = ref<InstanceType<typeof PasswordInput> | null>(null);
 const emailInput = ref<InstanceType<typeof EmailInput> | null>(null);
 
+const errorVisible = ref(false);
+
+function clearErrorVisibility() {
+  errorVisible.value = false;
+}
+
+watch(errorVisible, ()=>{
+  if (errorVisible.value) {
+    emailInput.value?.displayError();
+    passwordInput.value?.displayError();
+    confirmPasswordInput.value?.displayError();
+  } else {
+    emailInput.value?.clearError();
+    passwordInput.value?.clearError();
+    confirmPasswordInput.value?.clearError();
+  }
+});
 
 async function handleSubmit() {
   if (password.value !== confirmPassword.value) {
     confirmPasswordInput.value?.displayError();
     passwordInput.value?.displayError();
+    errorVisible.value = true;
     return;
   }
   try{
@@ -30,12 +50,9 @@ async function handleSubmit() {
       }),
     });
     if (response.ok) {
-      console.log("registered");
+      router.push('/');
     } else {
-      emailInput.value?.displayError();
-      passwordInput.value?.displayError();
-      confirmPasswordInput.value?.displayError();
-      console.log("test")
+      errorVisible.value = true;
     }
   } catch(error){
     console.error("Error during registration:", error);
@@ -47,14 +64,20 @@ async function handleSubmit() {
 <template>
   <div class="h-screen flex justify-center items-center">
     <form 
-        class="bg-black h-1/3 w-full max-w-xs p-8 rounded-lg shadow-lg flex flex-col justify-evenly gap-6 border border-white"
+        class="bg-black h-2/5 w-full max-w-xs p-8 rounded-lg shadow-lg flex flex-col justify-evenly gap-6 border border-white"
         @submit.prevent="handleSubmit"
     >
     <h1 class="text-white text-3xl font-bold text-center">Register</h1>
-    <!-- <img src="../assets/logo2.png" alt="Logo" class="mx-auto w-32 h-auto"> -->
-    <EmailInput v-model="email" ref="emailInput"></EmailInput>
-    <PasswordInput v-model="password" ref="passwordInput"></PasswordInput>
-    <PasswordInput v-model="confirmPassword" placeholder="Confirm Password" ref="confirmPasswordInput"></PasswordInput>
+    <EmailInput v-model="email" ref="emailInput" @focus="clearErrorVisibility"></EmailInput>
+    <PasswordInput v-model="password" ref="passwordInput" @focus="clearErrorVisibility"></PasswordInput>
+    <PasswordInput v-model="confirmPassword" placeholder="Confirm Password" ref="confirmPasswordInput" @focus="clearErrorVisibility"></PasswordInput>
+    <div class="text-red-500 text-center overflow-visible -mb-2 -mt-2"
+         v-if="errorVisible"
+    >
+      <p>
+        Invalid credentials
+      </p>
+    </div>
     <input 
         class="bg-transparent text-white border border-white w-full h-10 rounded-md hover:bg-white hover:text-black transition duration-200 cursor-pointer"
         type="submit" 

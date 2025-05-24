@@ -27,5 +27,6 @@ function clearError() {
 defineExpose({
     displayError,
     clearError,
+    hasError: () => hasError.value,
 });
 </script>

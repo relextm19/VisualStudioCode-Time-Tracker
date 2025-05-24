@@ -6,6 +6,7 @@
             :type="showPassword ? 'text' : 'password'" 
             :placeholder="props.placeholder"
             v-model="model"
+            @focus="focusHandler"
             ref="input"
         >
         <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white w-5" @click="showPassword = !showPassword">
@@ -32,6 +33,12 @@ const props = defineProps({
     },
 });
 
+const emit = defineEmits(['focus']);
+
+function focusHandler() {
+    emit('focus');
+}
+
 const showPassword = ref(false);
 const model = defineModel<string>();
 const input = ref<HTMLInputElement | null>(null);
@@ -48,6 +55,7 @@ function clearError() {
 defineExpose({
     displayError,
     clearError,
+    hasError: () => hasError.value,
 });
 </script>
 
