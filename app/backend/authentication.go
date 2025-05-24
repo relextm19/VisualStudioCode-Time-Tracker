@@ -29,7 +29,6 @@ func createUser(db *sql.DB, user User) error {
 	return nil
 }
 
-// FIXME: empty user is a valid user
 func register(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	var user User
 
@@ -44,6 +43,12 @@ func register(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	if err != nil {
 		http.Error(w, "Invalid request format", http.StatusBadRequest)
 		log.Println("Invalid request format")
+		return
+	}
+
+	if !user.isValid() {
+		http.Error(w, "User is missing password or email", http.StatusBadRequest)
+		log.Println("User is missing password or email")
 		return
 	}
 
