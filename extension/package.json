@@ -11,24 +11,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage:javascript",
-    "onLanguage:python",
-    "onLanguage:typescript",
-    "onLanguage:go",
-    "onLanguage:java",
-    "onLanguage:rust",
-    "onLanguage:ruby",
-    "onLanguage:php",
-    "onLanguage:html",
-    "onLanguage:css",
-    "onLanguage:csharp",
-    "onLanguage:cpp",
-    "onLanguage:r",
-    "onLanguage:scala",
-    "onLanguage:perl",
-    "onLanguage:c",
-    "onLanguage:kotlin",
-    "onLanguage:swift"
+    "onStartupFinished"
   ],
   "main": "./extension.js",
   "scripts": {

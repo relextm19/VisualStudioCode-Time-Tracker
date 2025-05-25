@@ -24,7 +24,6 @@ async function activate(context) {
 
 function initializeSession() {
   const activeEditor = vscode.window.activeTextEditor;
-  console.log("Active editor on init:", activeEditor ? activeEditor.document.fileName : "No active editor");
   
   if (activeEditor) {
     sessionData.language = activeEditor.document.languageId;
@@ -36,32 +35,47 @@ function initializeSession() {
 }
 
 function registerEventHandlers(context) {
+  let editorFocusLostTimeout = null;
+
   context.subscriptions.push(
     // Detect when the active editor changes
     vscode.window.onDidChangeActiveTextEditor(async (editor) => {
+      // Clear any existing timeout to avoid multiple timeouts running
+      if (editorFocusLostTimeout) {
+        clearTimeout(editorFocusLostTimeout);
+        editorFocusLostTimeout = null;
+      }
+
       if (!editor) {
-        // Editor was closed or focus moved away from editors
-        if (sessionData.language !== '') {
-          await endSession();
-          sessionData.language = '';
-          sessionData.project = '';
-        }
+        // Don't end session immediately - wait to see if it's just a file switch
+        editorFocusLostTimeout = setTimeout(async () => {
+          // After timeout, check if there's still no active editor
+          if (!vscode.window.activeTextEditor && sessionData.language !== '') {
+            await endSession();
+            sessionData.language = '';
+            sessionData.project = '';
+          } 
+        }, 100);
         return;
       }
 
+      // We have a valid editor, proceed with normal processing
       const newLanguage = editor.document.languageId;
       const newProject = vscode.workspace.rootPath ? getProjectName(vscode.workspace.rootPath) : '';
-      console.log('Old Language:', sessionData.language, 'New Language:', newLanguage);
-      console.log('Old Project:', sessionData.project, 'New Project:', newProject);
-      console.log(sessionData)
+      
       if (newLanguage !== sessionData.language || newProject !== sessionData.project) {
         // Language or project changed
-        if (sessionData.language !== '') {
+        if (sessionData.language !== '' && sessionData.project !== '') {
+          console.log('Ending session due to language/project change');
           await endSession();
         }
+        
+        // Update session data
         sessionData.language = newLanguage;
         sessionData.project = newProject;
         sessionData.startTime = Date.now();
+        
+        // Start new session
         await startSession();
       }
     }),
@@ -72,56 +86,77 @@ function getProjectName(rootPath) {
   return rootPath.split('\\').pop();
 }
 
-// Checks if the language or project has changed.
-function getUpdatedSessionData() {
-  const activeEditor = vscode.window.activeTextEditor;
-  if (!activeEditor) {
-    return { newLanguage: '', newProject: '', updated: false };
-  }
-  const newLanguage = activeEditor.document.languageId;
-  const newProject = vscode.workspace.rootPath ? getProjectName(vscode.workspace.rootPath) : '';
-  const updated = newLanguage !== sessionData.language || newProject !== sessionData.project;
-  return { newLanguage, newProject, updated };
-}
-
 async function startSession() {
-  const payload = {
-    language: sessionData.language,
-    project: sessionData.project,
-    startTime: sessionData.startTime,
-    startDate: new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      timeZone: 'Europe/Warsaw'
-    }),
-  };
+  try {
+    console.log("Starting session with data:", JSON.stringify(sessionData));
+    
+    if (!sessionData.language || !sessionData.project) {
+      console.warn("Session data is incomplete. Language or project is not set.");
+      return;
+    }
+    
+    const payload = {
+      language: sessionData.language,
+      project: sessionData.project,
+      startTime: sessionData.startTime,
+      startDate: new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        timeZone: 'Europe/Warsaw'
+      }),
+    };
 
-  await fetch('http://127.0.0.1:8080/startSession', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+    const response = await fetch('http://127.0.0.1:8080/startSession', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Server responded with status: ${response.status}`);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error starting session:", error);
+    return false;
+  }
 }
 
 async function endSession() {
-  const payload = {
-    language: sessionData.language,
-    project: sessionData.project,
-    endTime: Date.now(),
-    endDate: new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      timeZone: 'Europe/Warsaw'
-    }),
-  };
+  try {
+    if (!sessionData.language || !sessionData.project) {
+      console.warn("Session data is incomplete. Language or project is not set.");
+      return;
+    }
+    
+    const payload = {
+      language: sessionData.language,
+      project: sessionData.project,
+      endTime: Date.now(),
+      endDate: new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        timeZone: 'Europe/Warsaw'
+      }),
+    };
 
-  await fetch('http://127.0.0.1:8080/endSession', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+    const response = await fetch('http://127.0.0.1:8080/endSession', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Server responded with status: ${response.status}`);
+    }
+    
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 async function deactivate() {
