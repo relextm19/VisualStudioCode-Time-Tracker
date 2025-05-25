@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full h-10 relative">
+    <div class="w-full min-h-[2.5rem] relative">
         <input 
             class="bg-black text-white h-full w-full rounded-md px-3 border focus:outline-none focus:shadow transition duration-200"
             :class="hasError ? ['border-red-500', 'shadow-red-500'] : ['border-white', 'shadow-white']"
@@ -9,7 +9,7 @@
             @focus="focusHandler"
             ref="input"
         >
-        <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white w-5" @click="showPassword = !showPassword">
+        <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white w-5" @click="showPassword = !showPassword" type="button">
             <img 
                 src="../assets/eye-crossed.png" alt="eye" 
                 v-if="!showPassword"

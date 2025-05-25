@@ -2,43 +2,70 @@ const vscode = require('vscode');
 const fetch = require('isomorphic-fetch');
 const { promptUserCredentials } = require('./userCredentials');
 
-let sessionData = {
+const sessionData = {
   language: '',
   project: '',
   startTime: null,
 };
 
 async function activate(context) {
-  // Prompt for credentials if not already stored.
   const savedCredentials = context.globalState.get('userCredentials');
   if (!savedCredentials) {
     await promptUserCredentials(context);
   }
 
-  await startSession();
+  // To avoid async problems with the initial session setup
+  setTimeout(() => {
+    initializeSession();
+  }, 1000);
 
-  // Check for changes every 2 seconds.
-  const interval = setInterval(async () => {
-    const activeEditor = vscode.window.activeTextEditor;
-    if (activeEditor) {
-      const { newLanguage, newProject, updated } = getUpdatedSessionData();
-      if (updated) {
-        await endSession();
+  registerEventHandlers(context);
+}
+
+function initializeSession() {
+  const activeEditor = vscode.window.activeTextEditor;
+  console.log("Active editor on init:", activeEditor ? activeEditor.document.fileName : "No active editor");
+  
+  if (activeEditor) {
+    sessionData.language = activeEditor.document.languageId;
+    sessionData.project = vscode.workspace.rootPath ? getProjectName(vscode.workspace.rootPath) : '';
+    sessionData.startTime = Date.now();
+    console.log("Initial session data:", JSON.stringify(sessionData));
+    startSession().catch(err => console.error("Error starting initial session:", err));
+  }
+}
+
+function registerEventHandlers(context) {
+  context.subscriptions.push(
+    // Detect when the active editor changes
+    vscode.window.onDidChangeActiveTextEditor(async (editor) => {
+      if (!editor) {
+        // Editor was closed or focus moved away from editors
+        if (sessionData.language !== '') {
+          await endSession();
+          sessionData.language = '';
+          sessionData.project = '';
+        }
+        return;
+      }
+
+      const newLanguage = editor.document.languageId;
+      const newProject = vscode.workspace.rootPath ? getProjectName(vscode.workspace.rootPath) : '';
+      console.log('Old Language:', sessionData.language, 'New Language:', newLanguage);
+      console.log('Old Project:', sessionData.project, 'New Project:', newProject);
+      console.log(sessionData)
+      if (newLanguage !== sessionData.language || newProject !== sessionData.project) {
+        // Language or project changed
+        if (sessionData.language !== '') {
+          await endSession();
+        }
         sessionData.language = newLanguage;
         sessionData.project = newProject;
         sessionData.startTime = Date.now();
         await startSession();
       }
-    } else if (sessionData.language !== '') {
-      // No active editor, so end the session.
-      await endSession();
-      sessionData.language = '';
-    }
-  }, 2000);
-
-  context.subscriptions.push({
-    dispose: () => clearInterval(interval)
-  });
+    }),
+  );
 }
 
 function getProjectName(rootPath) {

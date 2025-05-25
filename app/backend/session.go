@@ -14,7 +14,7 @@ type Session struct {
 	StartTime int64   `json:"startTime"`
 	EndTime   *int64  `json:"endTime"`
 	Language  string  `json:"language"`
-	Project   *string `json:"project"` //for backwards version compatibility when there were no projects
+	Project   string  `json:"project"`
 }
 
 func generateSessionID(language string, startTime int64, startDate string) string {
