@@ -6,6 +6,7 @@ const sessionData = {
   language: '',
   project: '',
   startTime: null,
+  startDate: '',
 };
 
 async function activate(context) {
@@ -22,7 +23,7 @@ async function activate(context) {
   registerEventHandlers(context);
 }
 
-function initializeSession() {
+function initializeSession(context) {
   const activeEditor = vscode.window.activeTextEditor;
   
   if (activeEditor) {
@@ -30,7 +31,7 @@ function initializeSession() {
     sessionData.project = vscode.workspace.rootPath ? getProjectName(vscode.workspace.rootPath) : '';
     sessionData.startTime = Date.now();
     console.log("Initial session data:", JSON.stringify(sessionData));
-    startSession().catch(err => console.error("Error starting initial session:", err));
+    startSession(context).catch(err => console.error("Error starting initial session:", err));
   }
 }
 
@@ -54,6 +55,8 @@ function registerEventHandlers(context) {
             await endSession();
             sessionData.language = '';
             sessionData.project = '';
+            sessionData.startTime = null;
+            sessionData.startDate = '';
           } 
         }, 100);
         return;
@@ -74,9 +77,15 @@ function registerEventHandlers(context) {
         sessionData.language = newLanguage;
         sessionData.project = newProject;
         sessionData.startTime = Date.now();
+        sessionData.startDate = new Date().toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          timeZone: 'Europe/Warsaw'
+        });
         
         // Start new session
-        await startSession();
+        await startSession(context);
       }
     }),
   );
@@ -86,7 +95,7 @@ function getProjectName(rootPath) {
   return rootPath.split('\\').pop();
 }
 
-async function startSession() {
+async function startSession(context) {
   try {
     console.log("Starting session with data:", JSON.stringify(sessionData));
     
@@ -98,13 +107,9 @@ async function startSession() {
     const payload = {
       language: sessionData.language,
       project: sessionData.project,
+      userId: context.globalState.get('userCredentials').token,
       startTime: sessionData.startTime,
-      startDate: new Date().toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        timeZone: 'Europe/Warsaw'
-      }),
+      startDate: sessionData.startDate
     };
 
     const response = await fetch('http://127.0.0.1:8080/startSession', {
@@ -159,13 +164,6 @@ async function endSession() {
   }
 }
 
-async function deactivate() {
-  if (sessionData.language !== '') {
-    await endSession();
-  }
-}
-
 module.exports = {
   activate,
-  deactivate,
 };

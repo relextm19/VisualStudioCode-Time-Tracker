@@ -9,6 +9,7 @@ import (
 type Session struct {
 	//Some values can be null thus we use pointers
 	ID        string  `json:"id"`
+	User_ID   string  `json:"userId"`
 	StartDate string  `json:"startDate"`
 	EndDate   *string `json:"endDate"`
 	StartTime int64   `json:"startTime"`

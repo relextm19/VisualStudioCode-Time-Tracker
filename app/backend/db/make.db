@@ -1,5 +1,11 @@
-CREATE TABLE Users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    password TEXT NOT NULL,
-    email TEXT NOT NULL
+CREATE TABLE Sessions(
+    session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    language TEXT NOT NULL,
+    project TEXT NOT NULL,
+    startTime INTEGER NOT NULL,
+    startDate TEXT NOT NULL,
+    endTime INTEGER,
+    endDate TEXT,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );

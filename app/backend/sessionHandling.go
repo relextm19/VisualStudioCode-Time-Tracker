@@ -8,6 +8,8 @@ import (
 	"net/http"
 )
 
+//TODO: Add a user token to the session to identify the user
+
 var openSessions SessionSlice
 
 func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
