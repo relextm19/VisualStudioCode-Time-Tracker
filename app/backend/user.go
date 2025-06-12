@@ -3,12 +3,12 @@ package main
 import "log"
 
 type User struct {
-	ID       int64  `json:"id"`
+	ID       string `json:"id"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func (u *User) isValid() bool {
+func (u *User) hasValidFields() bool {
 	if len(u.Email) <= 0 {
 		log.Println("User has no email")
 		return false

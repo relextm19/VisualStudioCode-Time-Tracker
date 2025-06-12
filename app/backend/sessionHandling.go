@@ -29,14 +29,23 @@ func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	session.ID = generateSessionID(session.Language, session.StartTime, session.StartDate)
+	session.SessionID, err = generateID()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("Error generating session ID")
+		return
+	}
 
-	_, err = db.Exec("INSERT INTO Sessions (id, startDate, endDate, startTime, endTime, language, project) VALUES (?, ?, ?, ?, ?, ?, ?)",
-		session.ID, session.StartDate, session.EndDate, session.StartTime, session.EndTime, session.Language, session.Project)
+	session.StartDate, session.StartTime = getCurrentDateTime()
+
+	log.Printf("language: %s, project: %s, startDate: %s, startTime: %d, userID: %s, sessionID: %s", session.Language, session.Project, session.StartDate, session.StartTime, session.UserID, session.SessionID)
+	_, err = db.Exec("INSERT INTO Sessions (session_id, user_id, language, project, startTime, startDate, endTime, endDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+		session.SessionID, session.UserID, session.Language, session.Project,
+		session.StartTime, session.StartDate, nil, nil)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Println("Error adding session to database")
+		log.Println("Error adding session to database", err)
 		return
 	}
 
@@ -62,15 +71,22 @@ func endSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	session.ID, err = openSessions.GetIDByLanguage(session.Language)
+	session.SessionID, err = openSessions.GetIDByLanguage(session.Language)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Println("Error during db lookup")
 		return
 	}
 
+	// Get current date and time. We have to use temp variables because of type mismatch
+	endDate, endTimeValue := getCurrentDateTime()
+
+	// Store as pointers in the session
+	session.EndDate = &endDate
+	session.EndTime = &endTimeValue
+
 	_, err = db.Exec("UPDATE Sessions SET endDate = ?, endTime = ? WHERE id = ?",
-		session.EndDate, session.EndTime, session.ID)
+		session.EndDate, session.EndTime, session.SessionID)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

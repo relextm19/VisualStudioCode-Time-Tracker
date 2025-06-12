@@ -1,6 +1,6 @@
 CREATE TABLE Sessions(
-    session_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
+    session_id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
     language TEXT NOT NULL,
     project TEXT NOT NULL,
     startTime INTEGER NOT NULL,

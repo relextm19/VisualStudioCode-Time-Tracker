@@ -1,35 +1,39 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 )
 
 type Session struct {
 	//Some values can be null thus we use pointers
-	ID        string  `json:"id"`
-	User_ID   string  `json:"userId"`
+	SessionID string  `json:"id"`
+	UserID    string  `json:"userId"`
 	StartDate string  `json:"startDate"`
 	EndDate   *string `json:"endDate"`
-	StartTime int64   `json:"startTime"`
-	EndTime   *int64  `json:"endTime"`
+	StartTime uint64  `json:"startTime"`
+	EndTime   *uint64 `json:"endTime"`
 	Language  string  `json:"language"`
 	Project   string  `json:"project"`
 }
 
-func generateSessionID(language string, startTime int64, startDate string) string {
-	data := fmt.Sprintf("%s%d%s", language, startTime, startDate)
-
-	hasher := md5.New()
-	hasher.Write([]byte(data))
-
-	hash := hasher.Sum(nil)
-	return hex.EncodeToString(hash)
+func (s *Session) hasValidFields() bool {
+	if len(s.Language) <= 0 {
+		return false
+	}
+	if len(s.Project) <= 0 {
+		return false
+	}
+	if s.StartTime <= 0 {
+		return false
+	}
+	if s.UserID == "" {
+		return false
+	}
+	return true
 }
 
 type SessionSlice struct {
-	Sessions []Session
+	Sessions []Session //i could use a map but there are little enough sessions that a slice is fine
 	length   int
 }
 
@@ -40,7 +44,7 @@ func (ss *SessionSlice) Push(s Session) {
 
 func (ss *SessionSlice) AddUnique(s Session) {
 	for _, session := range ss.Sessions {
-		if session.ID == s.ID {
+		if session.SessionID == s.SessionID {
 			return
 		}
 	}
@@ -50,7 +54,7 @@ func (ss *SessionSlice) AddUnique(s Session) {
 
 func (ss *SessionSlice) Remove(s Session) {
 	for i, session := range ss.Sessions {
-		if session.ID == s.ID {
+		if session.SessionID == s.SessionID {
 			ss.Sessions = append((ss.Sessions)[:i], (ss.Sessions)[i+1:]...)
 			return
 		}
@@ -61,7 +65,7 @@ func (ss *SessionSlice) Remove(s Session) {
 func (ss *SessionSlice) GetIDByLanguage(language string) (string, error) {
 	for _, session := range ss.Sessions {
 		if session.Language == language {
-			return session.ID, nil
+			return session.SessionID, nil
 		}
 	}
 	return "", fmt.Errorf("no session found for language %s", language)

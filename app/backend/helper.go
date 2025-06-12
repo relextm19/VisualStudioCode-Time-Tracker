@@ -1,8 +1,11 @@
 package main
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
+	"time"
 )
 
 func mapData(key string, db *sql.DB) (map[string]uint64, error) { //here we collect the time based on languages
@@ -36,4 +39,24 @@ func mapData(key string, db *sql.DB) (map[string]uint64, error) { //here we coll
 	}
 
 	return totalTimes, nil
+}
+
+// return a 256-bit random token
+func generateID() (string, error) {
+	b := make([]byte, 32)
+
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(b), nil
+}
+
+func getCurrentDateTime() (string, uint64) {
+	now := time.Now()
+	date := now.Format("2006-01-02")
+	timeUnix := uint64(now.Unix())
+
+	return date, timeUnix
 }

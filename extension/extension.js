@@ -5,19 +5,16 @@ const { promptUserCredentials } = require('./userCredentials');
 const sessionData = {
   language: '',
   project: '',
-  startTime: null,
-  startDate: '',
 };
 
 async function activate(context) {
-  const savedCredentials = context.globalState.get('userCredentials');
-  if (!savedCredentials) {
+  if (!context.globalState.get('user_id')) {
     await promptUserCredentials(context);
   }
 
   // To avoid async problems with the initial session setup
   setTimeout(() => {
-    initializeSession();
+    initializeSession(context);
   }, 1000);
 
   registerEventHandlers(context);
@@ -55,8 +52,6 @@ function registerEventHandlers(context) {
             await endSession();
             sessionData.language = '';
             sessionData.project = '';
-            sessionData.startTime = null;
-            sessionData.startDate = '';
           } 
         }, 100);
         return;
@@ -75,15 +70,7 @@ function registerEventHandlers(context) {
         
         // Update session data
         sessionData.language = newLanguage;
-        sessionData.project = newProject;
-        sessionData.startTime = Date.now();
-        sessionData.startDate = new Date().toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          timeZone: 'Europe/Warsaw'
-        });
-        
+        sessionData.project = newProject;        
         // Start new session
         await startSession(context);
       }
@@ -107,9 +94,7 @@ async function startSession(context) {
     const payload = {
       language: sessionData.language,
       project: sessionData.project,
-      userId: context.globalState.get('userCredentials').token,
-      startTime: sessionData.startTime,
-      startDate: sessionData.startDate
+      userID: context.globalState.get('user_id'),
     };
 
     const response = await fetch('http://127.0.0.1:8080/startSession', {
@@ -139,13 +124,6 @@ async function endSession() {
     const payload = {
       language: sessionData.language,
       project: sessionData.project,
-      endTime: Date.now(),
-      endDate: new Date().toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        timeZone: 'Europe/Warsaw'
-      }),
     };
 
     const response = await fetch('http://127.0.0.1:8080/endSession', {

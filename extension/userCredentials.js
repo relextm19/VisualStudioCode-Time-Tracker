@@ -10,6 +10,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * @param {vscode.ExtensionContext} context
  */
 
+
 async function promptUserCredentials(context) {
   const choice = await vscode.window.showQuickPick(
     ['Login', 'Register'],
@@ -19,7 +20,7 @@ async function promptUserCredentials(context) {
   let email, password;
   while(true){
     email = await promptEmail();
-    if (email === null) {
+    if (email === '') { 
       vscode.window.showErrorMessage('Invalid email format. Please try again.');
       continue;
     } else if (email === undefined) {
@@ -85,8 +86,15 @@ async function login(email, password, context) {
       vscode.window.showErrorMessage('Invalid email or password');
       return false;
     }
+    const response = await request.json();
+    console.log(response)
+    // If the response does not contain a token login failed.
+    if (!response.user_id) {
+      vscode.window.showErrorMessage('Login failed. Please check your credentials.');
+      return false;
+    }
     // Save credentials for future runs.
-    await context.globalState.update('userCredentials', { email, password });
+    await context.globalState.update('user_id', response.user_id);
     vscode.window.showInformationMessage('Login successful.');
     return true;
   } catch (error) {
@@ -98,7 +106,7 @@ async function login(email, password, context) {
 async function register(email, password, context) {
   const payload = { email, password };
   try {
-    const request = await fetch('http://127.0.0.1:8080/signUp', {
+    const request = await fetch('http://127.0.0.1:8080/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -107,9 +115,16 @@ async function register(email, password, context) {
       vscode.window.showErrorMessage('Something went wrong. Please try again.'); 
       return false;
     }
+    const response = await request.json();
+    // If the response does not contain a token registration failed.
+    if (!response.user_id) {
+      vscode.window.showErrorMessage('Registration failed. Please check your credentials.');
+      return false;
+    }
     // Save credentials for future runs.
-    await context.globalState.update('userCredentials', { email, password });
+    await context.globalState.update('user_id', response.user_id);
     vscode.window.showInformationMessage('Account registered.');
+    console.log(request.user_id)
     return true;
   } catch (error) {
     vscode.window.showErrorMessage('Failed to register account');
