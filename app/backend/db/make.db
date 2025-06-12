@@ -1,11 +1,11 @@
 CREATE TABLE Sessions(
-    session_id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
+    sessionID TEXT PRIMARY KEY,
+    userID TEXT NOT NULL,
     language TEXT NOT NULL,
     project TEXT NOT NULL,
     startTime INTEGER NOT NULL,
     startDate TEXT NOT NULL,
     endTime INTEGER,
     endDate TEXT,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+    FOREIGN KEY (userID) REFERENCES Users(user_id)
 );

@@ -8,8 +8,6 @@ import (
 	"net/http"
 )
 
-//TODO: Add a user token to the session to identify the user
-
 var openSessions SessionSlice
 
 func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
@@ -39,7 +37,7 @@ func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	session.StartDate, session.StartTime = getCurrentDateTime()
 
 	log.Printf("language: %s, project: %s, startDate: %s, startTime: %d, userID: %s, sessionID: %s", session.Language, session.Project, session.StartDate, session.StartTime, session.UserID, session.SessionID)
-	_, err = db.Exec("INSERT INTO Sessions (session_id, user_id, language, project, startTime, startDate, endTime, endDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+	_, err = db.Exec("INSERT INTO Sessions (sessionID, userID, language, project, startTime, startDate, endTime, endDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 		session.SessionID, session.UserID, session.Language, session.Project,
 		session.StartTime, session.StartDate, nil, nil)
 
@@ -50,7 +48,12 @@ func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	log.Printf("Session started in %s, projects %s", session.Language, session.Project)
-	openSessions.AddUnique(session)
+	err = openSessions.AddUnique(session)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println("Error adding session to open sessions", err)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -67,14 +70,14 @@ func endSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	err = json.Unmarshal(body, &session)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Println("Error during unmarshal")
+		log.Println("Error during unmarshal", err)
 		return
 	}
 
-	session.SessionID, err = openSessions.GetIDByLanguage(session.Language)
+	session.SessionID, err = openSessions.GetSessionIDForUser(session.UserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Println("Error during db lookup")
+		log.Println("Could not find session for user", session.UserID)
 		return
 	}
 
@@ -85,12 +88,12 @@ func endSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	session.EndDate = &endDate
 	session.EndTime = &endTimeValue
 
-	_, err = db.Exec("UPDATE Sessions SET endDate = ?, endTime = ? WHERE id = ?",
+	_, err = db.Exec("UPDATE Sessions SET endDate = ?, endTime = ? WHERE sessionID = ?",
 		session.EndDate, session.EndTime, session.SessionID)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Println("Error updating session in database")
+		log.Println("Error updating session in database", err)
 		return
 	}
 

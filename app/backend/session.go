@@ -42,14 +42,15 @@ func (ss *SessionSlice) Push(s Session) {
 	ss.length++
 }
 
-func (ss *SessionSlice) AddUnique(s Session) {
+func (ss *SessionSlice) AddUnique(s Session) error {
 	for _, session := range ss.Sessions {
-		if session.SessionID == s.SessionID {
-			return
+		if session.UserID == s.UserID { // the user cant have multiple active sessions beacuase that would suggest an error in the vscode extension itself
+			return fmt.Errorf("user %s already has an active session", s.UserID)
 		}
 	}
 	ss.length++
 	ss.Sessions = append(ss.Sessions, s)
+	return nil
 }
 
 func (ss *SessionSlice) Remove(s Session) {
@@ -62,11 +63,11 @@ func (ss *SessionSlice) Remove(s Session) {
 	ss.length--
 }
 
-func (ss *SessionSlice) GetIDByLanguage(language string) (string, error) {
+func (ss *SessionSlice) GetSessionIDForUser(userID string) (string, error) {
 	for _, session := range ss.Sessions {
-		if session.Language == language {
+		if session.UserID == userID {
 			return session.SessionID, nil
 		}
 	}
-	return "", fmt.Errorf("no session found for language %s", language)
+	return "", fmt.Errorf("no session found for user %s", userID)
 }

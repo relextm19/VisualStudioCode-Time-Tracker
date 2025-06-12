@@ -11,6 +11,7 @@ async function activate(context) {
   if (!context.globalState.get('user_id')) {
     await promptUserCredentials(context);
   }
+  global.userID = context.globalState.get('user_id');
 
   // To avoid async problems with the initial session setup
   setTimeout(() => {
@@ -28,7 +29,7 @@ function initializeSession(context) {
     sessionData.project = vscode.workspace.rootPath ? getProjectName(vscode.workspace.rootPath) : '';
     sessionData.startTime = Date.now();
     console.log("Initial session data:", JSON.stringify(sessionData));
-    startSession(context).catch(err => console.error("Error starting initial session:", err));
+    startSession().catch(err => console.error("Error starting initial session:", err));
   }
 }
 
@@ -72,7 +73,7 @@ function registerEventHandlers(context) {
         sessionData.language = newLanguage;
         sessionData.project = newProject;        
         // Start new session
-        await startSession(context);
+        await startSession();
       }
     }),
   );
@@ -82,7 +83,7 @@ function getProjectName(rootPath) {
   return rootPath.split('\\').pop();
 }
 
-async function startSession(context) {
+async function startSession() {
   try {
     console.log("Starting session with data:", JSON.stringify(sessionData));
     
@@ -94,7 +95,7 @@ async function startSession(context) {
     const payload = {
       language: sessionData.language,
       project: sessionData.project,
-      userID: context.globalState.get('user_id'),
+      userID: global.userID,
     };
 
     const response = await fetch('http://127.0.0.1:8080/startSession', {
@@ -124,6 +125,7 @@ async function endSession() {
     const payload = {
       language: sessionData.language,
       project: sessionData.project,
+      userID: global.userID,
     };
 
     const response = await fetch('http://127.0.0.1:8080/endSession', {
@@ -142,6 +144,14 @@ async function endSession() {
   }
 }
 
+function deactivate(context) {
+  if (sessionData.language !== '' && sessionData.project !== '') {
+    endSession().catch(err => console.error("Error ending session on deactivate:", err));
+    context.subscriptions.forEach(subscription => subscription.dispose());
+  }
+}
+
 module.exports = {
   activate,
+  deactivate
 };
