@@ -54,7 +54,7 @@ async function handleSubmit() {
 <template>
   <div class="h-screen flex justify-center items-center">
     <form 
-        class="bg-black h-2/5 w-full max-w-xs p-8 rounded-lg shadow-lg flex flex-col justify-evenly border border-white"
+        class="bg-black h-3/5 w-full max-w-xs p-8 rounded-lg shadow-lg flex flex-col justify-evenly border border-white"
         @submit.prevent="handleSubmit"
     >
     <h1 class="text-white text-3xl font-bold text-center">LOGIN</h1>

@@ -6,7 +6,7 @@ import (
 
 type Session struct {
 	//Some values can be null thus we use pointers
-	SessionID string  `json:"id"`
+	SessionID int64   `json:"id"`
 	UserID    string  `json:"userId"`
 	StartDate string  `json:"startDate"`
 	EndDate   *string `json:"endDate"`
@@ -63,11 +63,11 @@ func (ss *SessionSlice) Remove(s Session) {
 	ss.length--
 }
 
-func (ss *SessionSlice) GetSessionIDForUser(userID string) (string, error) {
+func (ss *SessionSlice) GetSessionIDForUser(userID string) (int64, error) {
 	for _, session := range ss.Sessions {
 		if session.UserID == userID {
 			return session.SessionID, nil
 		}
 	}
-	return "", fmt.Errorf("no session found for user %s", userID)
+	return 0, fmt.Errorf("no session found for user %s", userID)
 }

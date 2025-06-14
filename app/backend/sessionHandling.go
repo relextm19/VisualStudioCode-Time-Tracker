@@ -27,18 +27,10 @@ func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	session.SessionID, err = generateID()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("Error generating session ID")
-		return
-	}
-
 	session.StartDate, session.StartTime = getCurrentDateTime()
 
-	log.Printf("language: %s, project: %s, startDate: %s, startTime: %d, userID: %s, sessionID: %s", session.Language, session.Project, session.StartDate, session.StartTime, session.UserID, session.SessionID)
-	_, err = db.Exec("INSERT INTO Sessions (sessionID, userID, language, project, startTime, startDate, endTime, endDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-		session.SessionID, session.UserID, session.Language, session.Project,
+	result, err := db.Exec("INSERT INTO Sessions (userID, language, project, startTime, startDate, endTime, endDate) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		session.UserID, session.Language, session.Project,
 		session.StartTime, session.StartDate, nil, nil)
 
 	if err != nil {
@@ -47,13 +39,21 @@ func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	log.Printf("Session started in %s, projects %s", session.Language, session.Project)
+	sessionID, err := result.LastInsertId()
+	if err != nil {
+		log.Println("Error retrieving last id", err)
+	}
+
+	session.SessionID = sessionID
+
 	err = openSessions.AddUnique(session)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println("Error adding session to open sessions", err)
 		return
 	}
+
+	log.Printf("Session started in %s, project %s", session.Language, session.Project)
 	w.WriteHeader(http.StatusOK)
 }
 

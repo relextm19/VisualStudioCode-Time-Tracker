@@ -46,6 +46,6 @@ func main() {
 	})
 
 	handler := cors.Default().Handler(router)
-
+	log.Println("server running")
 	log.Fatal(http.ListenAndServe(":8080", handler))
 }

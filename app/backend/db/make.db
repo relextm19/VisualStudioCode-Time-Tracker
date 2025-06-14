@@ -1,5 +1,5 @@
 CREATE TABLE Sessions(
-    sessionID TEXT PRIMARY KEY,
+    sessionID INTEGER PRIMARY KEY AUTOINCREMENT,
     userID TEXT NOT NULL,
     language TEXT NOT NULL,
     project TEXT NOT NULL,
