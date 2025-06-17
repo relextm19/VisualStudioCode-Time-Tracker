@@ -3,9 +3,11 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"time"
 )
 
 func checkUserExists(db *sql.DB, email string) (error, bool) {
@@ -81,8 +83,13 @@ func register(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	w.Header().Set("Content-Type", "application/json")
+	err = setHeaderAndCookie(&w)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	response := map[string]string{"user_id": user_id}
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
@@ -118,8 +125,12 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			http.Error(w, "Failed to look up user", http.StatusBadRequest)
 		}
 		if user_id != "" {
-			w.WriteHeader(http.StatusAccepted)
-			w.Header().Set("Content-Type", "application/json")
+			err := setHeaderAndCookie(&w)
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 			response := map[string]string{"user_id": user_id}
 			if err := json.NewEncoder(w).Encode(response); err != nil {
 				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
@@ -134,4 +145,29 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		http.Error(w, "User doesnt exist", http.StatusBadRequest)
 		return
 	}
+}
+
+func setHeaderAndCookie(w *http.ResponseWriter) error {
+	//first generate the cookie
+	exprDate := time.Now().Add(time.Hour * 720) //30 days
+	token, err := generateID()
+	if err != nil {
+		return fmt.Errorf("error generating an uth token %s", err)
+	}
+	authCookie := generateAuthCookie(token, exprDate)
+	//set the headers and cookie header
+	(*w).Header().Set("Content-Type", "application/json")
+	http.SetCookie(*w, &authCookie)
+
+	return nil
+}
+
+func checkAuthToken(token, db *sql.DB) (bool, error) {
+	exists := false
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM WebsiteSessions WHERE sessionToken = ?)", token).Scan(&exists)
+	if err != nil {
+		log.Println("Error quering database for WebsiteSession", err)
+		return false, err
+	}
+	return exists, nil
 }
