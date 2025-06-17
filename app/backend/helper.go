@@ -64,12 +64,10 @@ func getCurrentDateTime() (string, uint64) {
 
 func generateAuthCookie(token string, exprDate time.Time) http.Cookie {
 	return http.Cookie{
-		Name:     "AuthToken",
-		Value:    token,
-		Expires:  exprDate,
-		HttpOnly: true,                    // Prevents JavaScript access
-		Secure:   true,                    // Only sent over HTTPS
-		SameSite: http.SameSiteStrictMode, // Prevents CSRF attacks
-		Path:     "/",                     // Available across all paths
+		Name:    "AuthToken",
+		Value:   token,
+		Expires: exprDate,
+		Secure:  false,
+		Path:    "/", // Available across all paths
 	}
 }

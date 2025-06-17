@@ -31,6 +31,9 @@ func main() {
 	router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		login(w, r, db)
 	}).Methods("POST")
+	router.HandleFunc("/authorized", func(w http.ResponseWriter, r *http.Request) {
+		checkAuth(w, r, db)
+	})
 	router.HandleFunc("/getLanguages", func(w http.ResponseWriter, r *http.Request) {
 		getLanguages(w, r, db)
 	})
