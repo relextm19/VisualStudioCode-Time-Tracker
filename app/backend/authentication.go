@@ -162,17 +162,17 @@ func setHeaderAndCookie(w *http.ResponseWriter) error {
 	if err != nil {
 		return fmt.Errorf("error generating an uth token %s", err)
 	}
-	authCookie := generateAuthCookie(token, exprDate)
+	sessionTokenCookie := generateWebSessionTokenCookie(token, exprDate)
 	//set the headers and cookie header
 	(*w).Header().Set("Content-Type", "application/json")
-	http.SetCookie(*w, &authCookie)
+	http.SetCookie(*w, &sessionTokenCookie)
 
 	return nil
 }
 
 func checkAuth(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	log.Println(r.Cookies())
-	authCookie, err := r.Cookie("AuthToken")
+	authCookie, err := r.Cookie("WebSessionToken")
 	if err != nil {
 		log.Println("Error reading authCookie from request")
 		w.WriteHeader(http.StatusInternalServerError)

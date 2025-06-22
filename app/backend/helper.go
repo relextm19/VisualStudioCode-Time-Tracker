@@ -62,12 +62,13 @@ func getCurrentDateTime() (string, uint64) {
 	return date, timeUnix
 }
 
-func generateAuthCookie(token string, exprDate time.Time) http.Cookie {
+func generateWebSessionTokenCookie(token string, exprDate time.Time) http.Cookie {
 	return http.Cookie{
-		Name:    "AuthToken",
-		Value:   token,
-		Expires: exprDate,
-		Secure:  false,
-		Path:    "/", // Available across all paths
+		Name:     "WebSessionToken",
+		Value:    token,
+		Expires:  exprDate,
+		Secure:   false,
+		Path:     "/", // Available across all paths
+		SameSite: http.SameSiteLaxMode,
 	}
 }

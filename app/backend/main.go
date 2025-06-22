@@ -48,7 +48,14 @@ func main() {
 		http.ServeFile(w, r, "../static/html/languages.html")
 	})
 
-	handler := cors.Default().Handler(router)
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		ExposedHeaders:   []string{"Set-Cookie"},
+		AllowCredentials: true,
+	})
+	handler := corsHandler.Handler(router)
 	log.Println("server running")
 	log.Fatal(http.ListenAndServe(":8080", handler))
 }
