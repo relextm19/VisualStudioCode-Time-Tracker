@@ -69,6 +69,6 @@ func generateWebSessionTokenCookie(token string, exprDate time.Time) http.Cookie
 		Expires:  exprDate,
 		Secure:   false,
 		Path:     "/", // Available across all paths
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 	}
 }
