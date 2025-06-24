@@ -1,4 +1,7 @@
 <script setup lang="ts">
+//check if user is already authenticated if yes go to home page
+checkAuth();
+
 import { ref } from 'vue';
 import { watch } from 'vue';
 import router from '@/router';
@@ -49,18 +52,18 @@ async function handleSubmit() {
   }
 }
 
-// async function checkAuth() {
-//   try {
-//     const response = await fetch('http://localhost:8080/authorized', {
-//       credentials: 'include',
-//     });
-//     if (response.ok) {
-//       router.push('/');
-//     }
-//   } catch (error) {
-//     console.error("Error checking authentication:", error);
-//   }
-// }
+async function checkAuth() {
+  try {
+    const response = await fetch('/authorized', {
+      credentials: 'include',
+    });
+    if (response.ok) {
+      router.push('/');
+    }
+  } catch (error) {
+    console.error("Error checking authentication:", error);
+  }
+}
 
 </script>
 

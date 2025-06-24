@@ -44,17 +44,27 @@ func main() {
 	})
 
 	//serve the frontend files
-	//FIXME: This is absolutely not safe the input needs to be sanitized or sth similar
 	distDir := "../frontend/site/dist"
 	router.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Only handle non-API paths
 		if strings.HasPrefix(r.URL.Path, "/api/") {
 			return
 		}
-		path := filepath.Join(distDir, r.URL.Path)
-		_, err := os.Stat(path)
+
+		//prevent directory traversal attacks
+		cleanedPath := filepath.Clean(r.URL.Path)
+		fullPath := filepath.Join(distDir, cleanedPath)
+
+		absDistDir, _ := filepath.Abs(distDir)
+		absFullPath, _ := filepath.Abs(fullPath)
+		if !strings.HasPrefix(absFullPath, absDistDir) {
+			http.Error(w, "Invalid path", http.StatusBadRequest)
+			return
+		}
+		log.Println(r.URL.Path, "->", fullPath)
+		_, err := os.Stat(fullPath)
 		if err == nil {
-			http.ServeFile(w, r, path)
+			http.ServeFile(w, r, fullPath)
 			return
 		}
 		http.ServeFile(w, r, filepath.Join(distDir, "index.html"))

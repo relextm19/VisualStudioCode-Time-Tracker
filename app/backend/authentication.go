@@ -143,7 +143,6 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 				log.Println("Failed to encode response:", err)
 				return
 			}
-			log.Println(w.Header(), response)
 			log.Println("User logged in successfully")
 		} else {
 			w.WriteHeader(http.StatusUnauthorized)
