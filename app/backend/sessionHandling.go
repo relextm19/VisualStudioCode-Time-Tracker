@@ -15,26 +15,27 @@ func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("Error reading request body")
 		return
 	}
-
 	err = json.Unmarshal(body, &session)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("Error during unmarshal")
 		return
 	}
 
 	session.StartDate, session.StartTime = getCurrentDateTime()
-
-	result, err := db.Exec("INSERT INTO Sessions (userID, language, project, startTime, startDate, endTime, endDate) VALUES (?, ?, ?, ?, ?, ?, ?)",
-		session.UserID, session.Language, session.Project,
+	//we take in an WebSessionToken to identfy the user without exposing the user ID and to expire the tokens but in the database its saved with the user ID
+	result, err := db.Exec(
+		"INSERT INTO Sessions (userID, language, project, startTime, startDate, endTime, endDate) "+
+			"VALUES ((SELECT userID FROM WebSessions WHERE webSessionToken = ?), ?, ?, ?, ?, ?, ?)",
+		session.WebSessionToken, session.Language, session.Project,
 		session.StartTime, session.StartDate, nil, nil)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("Error adding session to database", err)
 		return
 	}
@@ -74,10 +75,10 @@ func endSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	session.SessionID, err = openSessions.GetSessionIDForUser(session.UserID)
+	session.SessionID, err = openSessions.GetSessionIDForUser(session.WebSessionToken)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Println("Could not find session for user", session.UserID)
+		log.Println("Could not find session for sessionToken", session.WebSessionToken)
 		return
 	}
 

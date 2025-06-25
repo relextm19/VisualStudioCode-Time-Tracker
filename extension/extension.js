@@ -8,10 +8,11 @@ const sessionData = {
 };
 
 async function activate(context) {
-  if (!context.globalState.get('user_id')) {
-    await promptUserCredentials(context);
-  }
-  global.userID = context.globalState.get('user_id');
+  // if (!context.globalState.get('WebSessionToken')) {
+  //   await promptUserCredentials(context);
+  // }
+  await promptUserCredentials(context);
+  global.WebSessionToken = context.globalState.get('WebSessionToken');
 
   // To avoid async problems with the initial session setup
   setTimeout(() => {
@@ -95,10 +96,10 @@ async function startSession() {
     const payload = {
       language: sessionData.language,
       project: sessionData.project,
-      userID: global.userID,
+      WebSessionToken: global.WebSessionToken,
     };
 
-    const response = await fetch('http://127.0.0.1:8080/startSession', {
+    const response = await fetch('http://127.0.0.1:8080/api/startSession', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -125,10 +126,10 @@ async function endSession() {
     const payload = {
       language: sessionData.language,
       project: sessionData.project,
-      userID: global.userID,
+      WebSessionToken: global.WebSessionToken,
     };
 
-    const response = await fetch('http://127.0.0.1:8080/endSession', {
+    const response = await fetch('http://127.0.0.1:8080/api/endSession', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

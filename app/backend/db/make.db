@@ -1,7 +1,6 @@
-CREATE TABLE WebsiteSessions(
-    id TEXT PRIMARY KEY,
+CREATE TABLE WebSessions(
+    webSessionToken TEXT PRIMARY KEY,
     userID TEXT NOT NULL,
-    sessionToken TEXT NOT NULL,
     expiresAt INTEGER NOT NULL,
     FOREIGN KEY (userID) REFERENCES Users(userID) ON DELETE CASCADE
 )

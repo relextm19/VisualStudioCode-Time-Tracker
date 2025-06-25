@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -70,5 +71,12 @@ func main() {
 		http.ServeFile(w, r, filepath.Join(distDir, "index.html"))
 	})
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	cors := cors.New(cors.Options{
+		AllowedOrigins:   []string{"127.0.0.1:5173"},
+		AllowCredentials: true,
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+	})
+
+	log.Fatal(http.ListenAndServe(":8080", cors.Handler(router)))
 }

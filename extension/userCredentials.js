@@ -77,7 +77,7 @@ async function promptPassword(prompt, placeHolder) {
 async function login(email, password, context) {
   const payload = { email, password };
   try {
-    const request = await fetch('http://127.0.0.1:8080/login', {
+    const request = await fetch('http://127.0.0.1:8080/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -89,12 +89,12 @@ async function login(email, password, context) {
     const response = await request.json();
     console.log(response)
     // If the response does not contain a token login failed.
-    if (!response.user_id) {
+    if (!response.WebSessionToken) {
       vscode.window.showErrorMessage('Login failed. Please check your credentials.');
       return false;
     }
     // Save credentials for future runs.
-    await context.globalState.update('user_id', response.user_id);
+    await context.globalState.update('WebSessionToken', response.WebSessionToken);
     vscode.window.showInformationMessage('Login successful.');
     return true;
   } catch (error) {
@@ -106,7 +106,7 @@ async function login(email, password, context) {
 async function register(email, password, context) {
   const payload = { email, password };
   try {
-    const request = await fetch('http://127.0.0.1:8080/register', {
+    const request = await fetch('http://127.0.0.1:8080/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -117,14 +117,13 @@ async function register(email, password, context) {
     }
     const response = await request.json();
     // If the response does not contain a token registration failed.
-    if (!response.user_id) {
+    if (!response.WebSessionToken) {
       vscode.window.showErrorMessage('Registration failed. Please check your credentials.');
       return false;
     }
     // Save credentials for future runs.
-    await context.globalState.update('user_id', response.user_id);
+    await context.globalState.update('user_id', response.WebSessionToken);
     vscode.window.showInformationMessage('Account registered.');
-    console.log(request.user_id)
     return true;
   } catch (error) {
     vscode.window.showErrorMessage('Failed to register account');

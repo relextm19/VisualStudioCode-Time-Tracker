@@ -22,7 +22,7 @@ func checkUserExists(db *sql.DB, email string) (error, bool) {
 }
 
 func createUser(db *sql.DB, user User) error {
-	_, err := db.Exec("INSERT INTO USERS (user_id, email, password) VALUES(?, ?, ?)", user.ID, user.Email, user.Password)
+	_, err := db.Exec("INSERT INTO USERS (userID, email, password) VALUES(?, ?, ?)", user.UserID, user.Email, user.Password)
 
 	if err != nil {
 		return err
@@ -68,35 +68,42 @@ func register(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	//generate a unique user ID
-	user_id, err := generateID()
+	generatedID, err := generateID()
 	if err != nil {
 		log.Println("Error generating user ID:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	user.ID = user_id
+	user.UserID = generatedID
 
 	err = createUser(db, user)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println("Error creating user")
+		log.Println("Error creating user", err)
 		return
 	}
 
-	err = setHeaderAndCookie(&w)
+	webSessionCookie, err := setHeaderAndCookie(&w)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	response := map[string]string{"user_id": user_id}
+	err = createNewWebSession(db, webSessionCookie.Value, user.UserID, webSessionCookie.Expires.Unix())
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]string{"WebSessionToken": webSessionCookie.Value}
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("Failed to encode response:", err)
 		return
 	}
-	log.Println("User registered successfully")
+	log.Println("User registered successfully. returned", webSessionCookie.Value)
 }
 
 func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
@@ -124,26 +131,34 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 	if exists {
-		user_id := ""
-		err := db.QueryRow("SELECT user_id FROM Users WHERE email = ? AND password = ?", user.Email, user.Password).Scan(&user_id)
+		err := db.QueryRow("SELECT userID FROM Users WHERE email = ? AND password = ?", user.Email, user.Password).Scan(&user.UserID)
 		if err != nil {
+			log.Println("Error querying user:", err)
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		if user_id != "" {
-			err := setHeaderAndCookie(&w)
+		if user.UserID != "" {
+			webSessionCookie, err := setHeaderAndCookie(&w)
 			if err != nil {
 				log.Println(err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			response := map[string]string{"user_id": user_id}
+			//TODO: add the same to registerr
+			err = createNewWebSession(db, webSessionCookie.Value, user.UserID, webSessionCookie.Expires.Unix())
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			response := map[string]string{"WebSessionToken": webSessionCookie.Value}
 			if err := json.NewEncoder(w).Encode(response); err != nil {
-				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+				w.WriteHeader(http.StatusInternalServerError)
 				log.Println("Failed to encode response:", err)
 				return
 			}
-			log.Println("User logged in successfully")
+			log.Println("User logged in successfully returned", webSessionCookie.Value)
 		} else {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
@@ -154,19 +169,19 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 }
 
-func setHeaderAndCookie(w *http.ResponseWriter) error {
+func setHeaderAndCookie(w *http.ResponseWriter) (*http.Cookie, error) {
 	//first generate the cookie
 	exprDate := time.Now().Add(time.Hour * 720) //30 days
 	token, err := generateID()
 	if err != nil {
-		return fmt.Errorf("error generating an uth token %s", err)
+		return nil, fmt.Errorf("error generating an uth token %s", err)
 	}
 	sessionTokenCookie := generateWebSessionTokenCookie(token, exprDate)
 	//set the headers and cookie header
 	(*w).Header().Set("Content-Type", "application/json")
 	http.SetCookie(*w, &sessionTokenCookie)
 
-	return nil
+	return &sessionTokenCookie, nil
 }
 
 func checkAuth(w http.ResponseWriter, r *http.Request, db *sql.DB) {
@@ -194,9 +209,17 @@ func checkAuth(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 func checkAuthToken(token string, db *sql.DB) (bool, error) {
 	exists := false
-	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM WebsiteSessions WHERE sessionToken = ?)", token).Scan(&exists)
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM WebSessions WHERE webSessionToken = ?)", token).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("error quering database for WebsiteSession %s", err)
 	}
 	return exists, nil
+}
+
+func createNewWebSession(db *sql.DB, sessionToken string, userID string, expiresAt int64) error {
+	_, err := db.Exec("INSERT INTO WebSessions (webSessionToken, userID, expiresAt) VALUES(?, ?, ?)", sessionToken, userID, expiresAt)
+	if err != nil {
+		return fmt.Errorf("error inserting new web session %s", err)
+	}
+	return nil
 }
