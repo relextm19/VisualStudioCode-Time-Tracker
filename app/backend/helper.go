@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"net/http"
 	"time"
 )
 
@@ -59,4 +60,15 @@ func getCurrentDateTime() (string, uint64) {
 	timeUnix := uint64(now.Unix())
 
 	return date, timeUnix
+}
+
+func generateWebSessionTokenCookie(token string, exprDate time.Time) http.Cookie {
+	return http.Cookie{
+		Name:     "WebSessionToken",
+		Value:    token,
+		Expires:  exprDate,
+		Secure:   false,
+		Path:     "/", // Available across all paths
+		SameSite: http.SameSiteNoneMode,
+	}
 }

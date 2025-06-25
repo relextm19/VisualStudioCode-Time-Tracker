@@ -6,14 +6,14 @@ import (
 
 type Session struct {
 	//Some values can be null thus we use pointers
-	SessionID int64   `json:"id"`
-	UserID    string  `json:"userId"`
-	StartDate string  `json:"startDate"`
-	EndDate   *string `json:"endDate"`
-	StartTime uint64  `json:"startTime"`
-	EndTime   *uint64 `json:"endTime"`
-	Language  string  `json:"language"`
-	Project   string  `json:"project"`
+	SessionID       int64   `json:"id"`
+	WebSessionToken string  `json:"webSessionToken"`
+	StartDate       string  `json:"startDate"`
+	EndDate         *string `json:"endDate"`
+	StartTime       uint64  `json:"startTime"`
+	EndTime         *uint64 `json:"endTime"`
+	Language        string  `json:"language"`
+	Project         string  `json:"project"`
 }
 
 func (s *Session) hasValidFields() bool {
@@ -26,7 +26,7 @@ func (s *Session) hasValidFields() bool {
 	if s.StartTime <= 0 {
 		return false
 	}
-	if s.UserID == "" {
+	if len(s.WebSessionToken) <= 0 {
 		return false
 	}
 	return true
@@ -44,8 +44,8 @@ func (ss *SessionSlice) Push(s Session) {
 
 func (ss *SessionSlice) AddUnique(s Session) error {
 	for _, session := range ss.Sessions {
-		if session.UserID == s.UserID { // the user cant have multiple active sessions beacuase that would suggest an error in the vscode extension itself
-			return fmt.Errorf("user %s already has an active session", s.UserID)
+		if session.WebSessionToken == s.WebSessionToken { // the user cant have multiple active sessions beacuase that would suggest an error in the vscode extension itself
+			return fmt.Errorf("user %s already has an active session", s.WebSessionToken)
 		}
 	}
 	ss.length++
@@ -65,7 +65,7 @@ func (ss *SessionSlice) Remove(s Session) {
 
 func (ss *SessionSlice) GetSessionIDForUser(userID string) (int64, error) {
 	for _, session := range ss.Sessions {
-		if session.UserID == userID {
+		if session.WebSessionToken == userID {
 			return session.SessionID, nil
 		}
 	}

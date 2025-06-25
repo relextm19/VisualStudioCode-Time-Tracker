@@ -3,7 +3,7 @@ package main
 import "log"
 
 type User struct {
-	ID       string `json:"id"`
+	UserID   string `json:"userID"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }

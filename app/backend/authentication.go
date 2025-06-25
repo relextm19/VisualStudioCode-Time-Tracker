@@ -3,9 +3,11 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"time"
 )
 
 func checkUserExists(db *sql.DB, email string) (error, bool) {
@@ -13,14 +15,14 @@ func checkUserExists(db *sql.DB, email string) (error, bool) {
 	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM Users WHERE email = ?)", email).Scan(&exists)
 
 	if err != nil {
-		return err, false
+		return fmt.Errorf("error looking for user in db %s", err), false
 	}
 
 	return nil, exists
 }
 
 func createUser(db *sql.DB, user User) error {
-	_, err := db.Exec("INSERT INTO USERS (user_id, email, password) VALUES(?, ?, ?)", user.ID, user.Email, user.Password)
+	_, err := db.Exec("INSERT INTO USERS (userID, email, password) VALUES(?, ?, ?)", user.UserID, user.Email, user.Password)
 
 	if err != nil {
 		return err
@@ -34,62 +36,74 @@ func register(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, "Error reading request", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		log.Println("Error reading request")
 		return
 	}
 
 	err = json.Unmarshal(body, &user)
 	if err != nil {
-		http.Error(w, "Invalid request format", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		log.Println("Invalid request format")
 		return
 	}
 
 	if !user.hasValidFields() {
-		http.Error(w, "User is missing password or email", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		log.Println("User is missing password or email")
 		return
 	}
 
 	err, exists := checkUserExists(db, user.Email)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		log.Println("Error checking user existence")
 		return
 	}
 
 	if exists {
-		http.Error(w, "Email already used", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		log.Println("Email already used")
 		return
 	}
 
 	//generate a unique user ID
-	user_id, err := generateID()
+	generatedID, err := generateID()
 	if err != nil {
 		log.Println("Error generating user ID:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	user.ID = user_id
+	user.UserID = generatedID
 
 	err = createUser(db, user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Println("Error creating user")
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("Error creating user", err)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	w.Header().Set("Content-Type", "application/json")
-	response := map[string]string{"user_id": user_id}
+	webSessionCookie, err := setHeaderAndCookie(&w)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = createNewWebSession(db, webSessionCookie.Value, user.UserID, webSessionCookie.Expires.Unix())
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]string{"WebSessionToken": webSessionCookie.Value}
 	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("Failed to encode response:", err)
 		return
 	}
-	log.Println("User registered successfully")
+	log.Println("User registered successfully. returned", webSessionCookie.Value)
 }
 
 func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
@@ -97,41 +111,115 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, "Failed to read request body", http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("error body read", err)
 		return
 	}
 	err = json.Unmarshal(body, &user)
 	if err != nil {
-		http.Error(w, "Invalid request format", http.StatusBadRequest)
+		log.Println(string(body))
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("error during unmarshal", err)
+		return
 	}
 
 	var exists bool
 	err, exists = checkUserExists(db, user.Email)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println(err)
 		return
 	}
 	if exists {
-		user_id := ""
-		err := db.QueryRow("SELECT user_id FROM Users WHERE email = ? AND password = ?", user.Email, user.Password).Scan(&user_id)
+		err := db.QueryRow("SELECT userID FROM Users WHERE email = ? AND password = ?", user.Email, user.Password).Scan(&user.UserID)
 		if err != nil {
-			http.Error(w, "Failed to look up user", http.StatusBadRequest)
+			log.Println("Error querying user:", err)
+			w.WriteHeader(http.StatusUnauthorized)
+			return
 		}
-		if user_id != "" {
-			w.WriteHeader(http.StatusAccepted)
-			w.Header().Set("Content-Type", "application/json")
-			response := map[string]string{"user_id": user_id}
+		if user.UserID != "" {
+			webSessionCookie, err := setHeaderAndCookie(&w)
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			//TODO: add the same to registerr
+			err = createNewWebSession(db, webSessionCookie.Value, user.UserID, webSessionCookie.Expires.Unix())
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			response := map[string]string{"WebSessionToken": webSessionCookie.Value}
 			if err := json.NewEncoder(w).Encode(response); err != nil {
-				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+				w.WriteHeader(http.StatusInternalServerError)
 				log.Println("Failed to encode response:", err)
 				return
 			}
-			log.Println("User logged in successfully")
+			log.Println("User logged in successfully returned", webSessionCookie.Value)
 		} else {
 			w.WriteHeader(http.StatusUnauthorized)
+			return
 		}
 	} else {
-		http.Error(w, "User doesnt exist", http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
+}
+
+func setHeaderAndCookie(w *http.ResponseWriter) (*http.Cookie, error) {
+	//first generate the cookie
+	exprDate := time.Now().Add(time.Hour * 720) //30 days
+	token, err := generateID()
+	if err != nil {
+		return nil, fmt.Errorf("error generating an uth token %s", err)
+	}
+	sessionTokenCookie := generateWebSessionTokenCookie(token, exprDate)
+	//set the headers and cookie header
+	(*w).Header().Set("Content-Type", "application/json")
+	http.SetCookie(*w, &sessionTokenCookie)
+
+	return &sessionTokenCookie, nil
+}
+
+func checkAuth(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	log.Println(r.Cookies())
+	authCookie, err := r.Cookie("WebSessionToken")
+	if err != nil {
+		log.Println("Error reading authCookie from request")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	loggedIn, err := checkAuthToken(authCookie.Value, db)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if loggedIn {
+		w.WriteHeader(http.StatusOK)
+		return
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
+	}
+
+}
+
+func checkAuthToken(token string, db *sql.DB) (bool, error) {
+	exists := false
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM WebSessions WHERE webSessionToken = ?)", token).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("error quering database for WebsiteSession %s", err)
+	}
+	return exists, nil
+}
+
+func createNewWebSession(db *sql.DB, sessionToken string, userID string, expiresAt int64) error {
+	_, err := db.Exec("INSERT INTO WebSessions (webSessionToken, userID, expiresAt) VALUES(?, ?, ?)", sessionToken, userID, expiresAt)
+	if err != nil {
+		return fmt.Errorf("error inserting new web session %s", err)
+	}
+	return nil
 }

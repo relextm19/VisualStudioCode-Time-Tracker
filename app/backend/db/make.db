@@ -1,11 +1,6 @@
-CREATE TABLE Sessions(
-    sessionID INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE WebSessions(
+    webSessionToken TEXT PRIMARY KEY,
     userID TEXT NOT NULL,
-    language TEXT NOT NULL,
-    project TEXT NOT NULL,
-    startTime INTEGER NOT NULL,
-    startDate TEXT NOT NULL,
-    endTime INTEGER,
-    endDate TEXT,
-    FOREIGN KEY (userID) REFERENCES Users(user_id)
-);
+    expiresAt INTEGER NOT NULL,
+    FOREIGN KEY (userID) REFERENCES Users(userID) ON DELETE CASCADE
+)
