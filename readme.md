@@ -5,7 +5,7 @@ This tool allows you to track your activity within Visual Studio Code by recordi
 ## Requirements
 
 - **Golang** installed
-- **Node.js** or another package manager installed
+- **npm** or another package manager installed
 - **Visual Studio Code** installed
 
 ## Setup
