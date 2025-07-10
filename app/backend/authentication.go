@@ -144,7 +144,7 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			//TODO: add the same to registerr
+
 			err = createNewWebSession(db, webSessionCookie.Value, user.UserID, webSessionCookie.Expires.Unix())
 			if err != nil {
 				log.Println(err)
