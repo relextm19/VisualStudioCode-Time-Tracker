@@ -144,7 +144,6 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			//TODO: add the same to registerr
 			err = createNewWebSession(db, webSessionCookie.Value, user.UserID, webSessionCookie.Expires.Unix())
 			if err != nil {
 				log.Println(err)
@@ -182,38 +181,6 @@ func setHeaderAndCookie(w *http.ResponseWriter) (*http.Cookie, error) {
 	http.SetCookie(*w, &sessionTokenCookie)
 
 	return &sessionTokenCookie, nil
-}
-
-func checkAuth(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	log.Println(r.Cookies())
-	authCookie, err := r.Cookie("WebSessionToken")
-	if err != nil {
-		log.Println("Error reading authCookie from request")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	loggedIn, err := checkAuthToken(authCookie.Value, db)
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	if loggedIn {
-		w.WriteHeader(http.StatusOK)
-		return
-	} else {
-		w.WriteHeader(http.StatusUnauthorized)
-	}
-
-}
-
-func checkAuthToken(token string, db *sql.DB) (bool, error) {
-	exists := false
-	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM WebSessions WHERE webSessionToken = ?)", token).Scan(&exists)
-	if err != nil {
-		return false, fmt.Errorf("error quering database for WebsiteSession %s", err)
-	}
-	return exists, nil
 }
 
 func createNewWebSession(db *sql.DB, sessionToken string, userID string, expiresAt int64) error {
