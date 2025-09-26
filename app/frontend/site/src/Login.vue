@@ -1,6 +1,4 @@
 <script setup lang="ts">
-//check if user is already authenticated if yes go to home page
-checkAuth();
 
 import { ref } from 'vue';
 import { watch } from 'vue';
@@ -37,6 +35,7 @@ async function handleSubmit() {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({
         email: email.value,
         password: password.value,
@@ -49,19 +48,6 @@ async function handleSubmit() {
     }
   } catch(error){
     console.error("Error during login:", error);
-  }
-}
-
-async function checkAuth() {
-  try {
-    const response = await fetch('/authorized', {
-      credentials: 'include',
-    });
-    if (response.ok) {
-      router.push('/');
-    }
-  } catch (error) {
-    console.error("Error checking authentication:", error);
   }
 }
 

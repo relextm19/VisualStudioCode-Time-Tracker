@@ -11,7 +11,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var publicPaths = []string{"/login", "/register", "/favicon.ico"}
+var publicPaths = []string{"/login", "/register", "/favicon.ico", "/api/login", "/api/register"}
 var publicPrefixes = []string{"/assets/"}
 
 func checkAuth(r *http.Request, db *sql.DB) (bool, error) {
@@ -46,15 +46,15 @@ func AuthMiddleware(next http.Handler, db *sql.DB) http.Handler {
 				return
 			}
 		}
-
+		//if we get the error it means that the cookie is not present but if loggedIn is false it means that the cookie is not correct/expired
 		loggedIn, err := checkAuth(r, db)
 		if err != nil {
 			log.Println("Auth error", err)
-			w.WriteHeader(http.StatusInternalServerError)
+			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 		if !loggedIn {
-			w.WriteHeader(http.StatusUnauthorized)
+			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 
