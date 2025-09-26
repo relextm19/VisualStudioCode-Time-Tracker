@@ -3,13 +3,16 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"net/http"
 	"slices"
+	"strings"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
-var publicPaths []string = []string{"/login", "/register"}
+var publicPaths = []string{"/login", "/register", "/favicon.ico"}
+var publicPrefixes = []string{"/assets/"}
 
 func checkAuth(r *http.Request, db *sql.DB) (bool, error) {
 	authCookie, err := r.Cookie("WebSessionToken")
@@ -31,9 +34,17 @@ func checkAuthToken(token string, db *sql.DB) (bool, error) {
 
 func AuthMiddleware(next http.Handler, db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//check if path is publicly accesible
 		if slices.Contains(publicPaths, r.URL.Path) {
 			next.ServeHTTP(w, r)
 			return
+		}
+		//check if path has a publicly accesible prefix
+		for _, prefix := range publicPrefixes {
+			if strings.HasPrefix(r.URL.Path, prefix) {
+				next.ServeHTTP(w, r)
+				return
+			}
 		}
 
 		loggedIn, err := checkAuth(r, db)
