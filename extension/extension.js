@@ -8,11 +8,9 @@ const sessionData = {
 };
 
 async function activate(context) {
-  // if (!context.globalState.get('WebSessionToken')) {
-  //   await promptUserCredentials(context);
-  // }
-  await promptUserCredentials(context);
-  global.WebSessionToken = context.globalState.get('WebSessionToken');
+  if (!context.globalState.get('WebSessionToken')) {
+    await promptUserCredentials(context);
+  }
 
   // To avoid async problems with the initial session setup
   setTimeout(() => {
@@ -101,7 +99,10 @@ async function startSession() {
 
     const response = await fetch('http://127.0.0.1:8080/api/startSession', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${global.WebSessionToken}`
+      },
       body: JSON.stringify(payload),
     });
     
@@ -131,7 +132,10 @@ async function endSession() {
 
     const response = await fetch('http://127.0.0.1:8080/api/endSession', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${global.WebSessionToken}`
+      },
       body: JSON.stringify(payload),
     });
     

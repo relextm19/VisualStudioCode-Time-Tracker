@@ -13,6 +13,7 @@ import (
 
 var publicPaths = []string{"/login", "/register", "/favicon.ico", "/api/login", "/api/register"}
 var publicPrefixes = []string{"/assets/"}
+var editorOnlyPaths = []string{"/api/startSession", "/api/endSession"}
 
 func checkAuth(r *http.Request, db *sql.DB) (bool, error) {
 	authCookie, err := r.Cookie("WebSessionToken")
@@ -36,6 +37,17 @@ func AuthMiddleware(next http.Handler, db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//check if path is publicly accesible
 		if slices.Contains(publicPaths, r.URL.Path) {
+			next.ServeHTTP(w, r)
+			return
+		}
+		//check if path is an editor only path
+		if slices.Contains(editorOnlyPaths, r.URL.Path) {
+			token := r.Header.Get("Authorization")
+			token = strings.TrimPrefix(token, "Bearer ")
+			if _, err := checkAuthToken(token, db); err != nil {
+				log.Println(err)
+				return
+			}
 			next.ServeHTTP(w, r)
 			return
 		}
