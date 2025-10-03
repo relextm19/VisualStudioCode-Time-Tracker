@@ -83,27 +83,27 @@ func register(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	webSessionCookie, err := setHeaderAndCookie(&w)
+	webSessionToken, err := generateWebSessionToken()
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	err = createNewWebSession(db, webSessionCookie.Value, user.UserID, webSessionCookie.Expires.Unix())
+	err = createNewWebSession(db, webSessionToken.Value, user.UserID, webSessionToken.Expiry.Unix())
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	response := map[string]string{"WebSessionToken": webSessionCookie.Value}
+	response := map[string]string{"WebSessionToken": webSessionToken.Value}
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("Failed to encode response:", err)
 		return
 	}
-	log.Println("User registered successfully. returned", webSessionCookie.Value)
+	log.Println("User registered successfully. returned", webSessionToken.Value)
 }
 
 func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
@@ -138,26 +138,26 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			return
 		}
 		if user.UserID != "" {
-			webSessionCookie, err := setHeaderAndCookie(&w)
+			webSessionToken, err := generateWebSessionToken()
 			if err != nil {
 				log.Println(err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			err = createNewWebSession(db, webSessionCookie.Value, user.UserID, webSessionCookie.Expires.Unix())
+			err = createNewWebSession(db, webSessionToken.Value, user.UserID, webSessionToken.Expiry.Unix())
 			if err != nil {
 				log.Println(err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
-			response := map[string]string{"WebSessionToken": webSessionCookie.Value}
+			response := map[string]string{"WebSessionToken": webSessionToken.Value}
 			if err := json.NewEncoder(w).Encode(response); err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				log.Println("Failed to encode response:", err)
 				return
 			}
-			log.Println("User logged in successfully returned", webSessionCookie.Value)
+			log.Println("User logged in successfully returned", webSessionToken.Value)
 		} else {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
@@ -168,19 +168,19 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 }
 
-func setHeaderAndCookie(w *http.ResponseWriter) (*http.Cookie, error) {
-	//first generate the cookie
-	exprDate := time.Now().Add(time.Hour * 720) //30 days
-	token, err := generateID()
-	if err != nil {
-		return nil, fmt.Errorf("error generating an uth token %s", err)
-	}
-	sessionTokenCookie := generateWebSessionTokenCookie(token, exprDate)
-	//set the headers and cookie header
-	(*w).Header().Set("Content-Type", "application/json")
-	http.SetCookie(*w, &sessionTokenCookie)
+type WebSessionToken struct {
+	Expiry time.Time
+	Value  string
+}
 
-	return &sessionTokenCookie, nil
+func generateWebSessionToken() (WebSessionToken, error) {
+	exprDate := time.Now().Add(time.Hour * 720) //30 days
+	id, err := generateID()
+	if err != nil {
+		return WebSessionToken{}, fmt.Errorf("error generating auth token id %s", err)
+	}
+	token := WebSessionToken{Expiry: exprDate, Value: id}
+	return token, nil
 }
 
 func createNewWebSession(db *sql.DB, sessionToken string, userID string, expiresAt int64) error {

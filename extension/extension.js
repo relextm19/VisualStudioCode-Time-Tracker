@@ -33,48 +33,39 @@ function initializeSession(context) {
 }
 
 function registerEventHandlers(context) {
-  let editorFocusLostTimeout = null;
-
   context.subscriptions.push(
-    // Detect when the active editor changes
     vscode.window.onDidChangeActiveTextEditor(async (editor) => {
-      // Clear any existing timeout to avoid multiple timeouts running
-      if (editorFocusLostTimeout) {
-        clearTimeout(editorFocusLostTimeout);
-        editorFocusLostTimeout = null;
-      }
-
+      // If editor is closed or no editor is active
       if (!editor) {
-        // Don't end session immediately - wait to see if it's just a file switch
-        editorFocusLostTimeout = setTimeout(async () => {
-          // After timeout, check if there's still no active editor
-          if (!vscode.window.activeTextEditor && sessionData.language !== '') {
-            await endSession();
-            sessionData.language = '';
-            sessionData.project = '';
-          } 
-        }, 100);
+        if (sessionData.language !== '' && sessionData.project !== '') {
+          console.log('Ending session because editor was closed');
+          await endSession();
+          sessionData.language = '';
+          sessionData.project = '';
+        }
         return;
       }
 
-      // We have a valid editor, proceed with normal processing
+      // Editor is open get language/project
       const newLanguage = editor.document.languageId;
       const newProject = vscode.workspace.rootPath ? getProjectName(vscode.workspace.rootPath) : '';
-      
+
+      // If language or project changed, end previous session
       if (newLanguage !== sessionData.language || newProject !== sessionData.project) {
-        // Language or project changed
         if (sessionData.language !== '' && sessionData.project !== '') {
           console.log('Ending session due to language/project change');
           await endSession();
         }
-        
+
         // Update session data
         sessionData.language = newLanguage;
-        sessionData.project = newProject;        
+        sessionData.project = newProject;
+
         // Start new session
+        console.log('Starting new session');
         await startSession();
       }
-    }),
+    })
   );
 }
 
@@ -151,9 +142,9 @@ async function endSession() {
 
 function deactivate(context) {
   if (sessionData.language !== '' && sessionData.project !== '') {
-    endSession().catch(err => console.error("Error ending session on deactivate:", err));
-    context.subscriptions.forEach(subscription => subscription.dispose());
+    endSession();
   }
+  context.subscriptions.forEach(subscription => subscription.dispose());
 }
 
 module.exports = {
