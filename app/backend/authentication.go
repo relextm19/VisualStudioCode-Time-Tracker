@@ -89,6 +89,8 @@ func register(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	authCookie, err := generateCookie(webSessionToken.Value, webSessionToken.Expiry)
+	http.SetCookie(w, &authCookie)
 
 	err = createNewWebSession(db, webSessionToken.Value, user.UserID, webSessionToken.Expiry.Unix())
 	if err != nil {
@@ -144,6 +146,8 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
+			authCookie, err := generateCookie(webSessionToken.Value, webSessionToken.Expiry)
+			http.SetCookie(w, &authCookie)
 			err = createNewWebSession(db, webSessionToken.Value, user.UserID, webSessionToken.Expiry.Unix())
 			if err != nil {
 				log.Println(err)

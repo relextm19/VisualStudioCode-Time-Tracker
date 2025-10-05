@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -61,13 +62,16 @@ func getCurrentDateTime() (string, uint64) {
 	return date, timeUnix
 }
 
-func generateWebSessionTokenCookie(token string, exprDate time.Time) http.Cookie {
+func generateCookie(token string, exprDate time.Time) (http.Cookie, error) {
+	if len(token) < 1 {
+		return http.Cookie{}, fmt.Errorf("Cant create cookie the token is not present")
+	}
 	return http.Cookie{
 		Name:     "WebSessionToken",
 		Value:    token,
 		Expires:  exprDate,
-		Secure:   false,
-		Path:     "/", // Available across all paths
 		SameSite: http.SameSiteLaxMode,
-	}
+		Secure:   false,
+		Path:     "/",
+	}, nil
 }

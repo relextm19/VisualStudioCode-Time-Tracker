@@ -13,16 +13,6 @@ import (
 
 var publicPaths = []string{"/login", "/register", "/favicon.ico", "/api/login", "/api/register"}
 var publicPrefixes = []string{"/assets/"}
-var editorOnlyPaths = []string{"/api/startSession", "/api/endSession"}
-
-func checkAuth(r *http.Request, db *sql.DB) (bool, error) {
-	authCookie, err := r.Cookie("WebSessionToken")
-	if err != nil {
-		log.Println("Error reading authCookie from request")
-		return false, err
-	}
-	return checkAuthToken(authCookie.Value, db)
-}
 
 func checkAuthToken(token string, db *sql.DB) (bool, error) {
 	exists := false
@@ -33,21 +23,27 @@ func checkAuthToken(token string, db *sql.DB) (bool, error) {
 	return exists, nil
 }
 
+func checkAuth(r *http.Request, db *sql.DB) (bool, error) {
+	authToken := ""
+	fmt.Println(r.Cookies())
+	if authCookie, err := r.Cookie("WebSessionToken"); err == nil {
+		authToken = authCookie.Value
+	} else {
+		fmt.Println(r.Header)
+		authHeader := r.Header.Get("Authorization")
+		authToken = strings.TrimPrefix(authHeader, "Bearer ")
+	}
+
+	if authToken == "" {
+		return false, nil
+	}
+	return checkAuthToken(authToken, db)
+}
+
 func AuthMiddleware(next http.Handler, db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//check if path is publicly accesible
 		if slices.Contains(publicPaths, r.URL.Path) {
-			next.ServeHTTP(w, r)
-			return
-		}
-		//check if path is an editor only path
-		if slices.Contains(editorOnlyPaths, r.URL.Path) {
-			token := r.Header.Get("Authorization")
-			token = strings.TrimPrefix(token, "Bearer ")
-			if _, err := checkAuthToken(token, db); err != nil {
-				log.Println(err)
-				return
-			}
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -58,7 +54,6 @@ func AuthMiddleware(next http.Handler, db *sql.DB) http.Handler {
 				return
 			}
 		}
-		//if we get the error it means that the cookie is not present but if loggedIn is false it means that the cookie is not correct/expired
 		loggedIn, err := checkAuth(r, db)
 		if err != nil {
 			log.Println("Auth error", err)
