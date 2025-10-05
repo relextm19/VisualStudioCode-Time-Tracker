@@ -172,6 +172,15 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 }
 
+func checkAuthEndpoint(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	err := checkAuth(r, db)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
 type WebSessionToken struct {
 	Expiry time.Time
 	Value  string

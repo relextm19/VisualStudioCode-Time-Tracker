@@ -40,6 +40,9 @@ func main() {
 	router.HandleFunc("/api/getProjects", func(w http.ResponseWriter, r *http.Request) {
 		getProjects(w, r, db)
 	})
+	router.HandleFunc("/api/checkAuth", func(w http.ResponseWriter, r *http.Request) {
+		checkAuthEndpoint(w, r, db)
+	})
 
 	//serve the frontend files
 	distDir := "../frontend/site/dist"
