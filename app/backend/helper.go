@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-func mapData(key string, db *sql.DB) (map[string]uint64, error) { //here we collect the time based on languages
-	rows, err := db.Query(fmt.Sprintf("SELECT %s, startTime, endTime FROM Sessions", key))
+func mapData(key string, db *sql.DB) (map[string]uint64, error) { //here we collect the time based on languages/projects
+	rows, err := db.Query("SELECT %s, startTime, endTime FROM Sessions", key)
 	if err != nil {
 		return nil, err
 	}
@@ -62,13 +62,16 @@ func getCurrentDateTime() (string, uint64) {
 	return date, timeUnix
 }
 
-func generateWebSessionTokenCookie(token string, exprDate time.Time) http.Cookie {
+func generateCookie(token string, exprDate time.Time) (http.Cookie, error) {
+	if len(token) < 1 {
+		return http.Cookie{}, fmt.Errorf("Cant create cookie the token is not present")
+	}
 	return http.Cookie{
 		Name:     "WebSessionToken",
 		Value:    token,
 		Expires:  exprDate,
+		SameSite: http.SameSiteLaxMode,
 		Secure:   false,
-		Path:     "/", // Available across all paths
-		SameSite: http.SameSiteNoneMode,
-	}
+		Path:     "/",
+	}, nil
 }

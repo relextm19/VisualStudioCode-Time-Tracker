@@ -28,10 +28,11 @@ func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	session.StartDate, session.StartTime = getCurrentDateTime()
 	//we take in an WebSessionToken to identfy the user without exposing the user ID and to expire the tokens but in the database its saved with the user ID
+	userID, err := getUserIDFromSessionID(db, session.WebSessionToken)
 	result, err := db.Exec(
 		"INSERT INTO Sessions (userID, language, project, startTime, startDate, endTime, endDate) "+
-			"VALUES ((SELECT userID FROM WebSessions WHERE webSessionToken = ?), ?, ?, ?, ?, ?, ?)",
-		session.WebSessionToken, session.Language, session.Project,
+			"VALUES (?, ?, ?, ?, ?, ?, ?)",
+		userID, session.WebSessionToken, session.Language, session.Project,
 		session.StartTime, session.StartDate, nil, nil)
 
 	if err != nil {
@@ -40,6 +41,7 @@ func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
+	//get last insert id which is an increment in the database
 	sessionID, err := result.LastInsertId()
 	if err != nil {
 		log.Println("Error retrieving last id", err)

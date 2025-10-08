@@ -1,6 +1,9 @@
 package main
 
-import "log"
+import (
+	"database/sql"
+	"log"
+)
 
 type User struct {
 	UserID   string `json:"userID"`
@@ -18,4 +21,13 @@ func (u *User) hasValidFields() bool {
 		return false
 	}
 	return true
+}
+
+func getUserIDFromSessionID(db *sql.DB, webSessionToken string) (string, error) {
+	var userID string
+	err := db.QueryRow("SELECT userID FROM WebSessions WHERE WebSessionToken = ?", webSessionToken).Scan(&userID)
+	if err != nil {
+		return "", err
+	}
+	return userID, nil
 }

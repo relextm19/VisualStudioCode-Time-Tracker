@@ -34,14 +34,14 @@ func main() {
 	router.HandleFunc("/api/login", func(w http.ResponseWriter, r *http.Request) {
 		login(w, r, db)
 	}).Methods("POST")
-	router.HandleFunc("/api/authorized", func(w http.ResponseWriter, r *http.Request) {
-		checkAuth(w, r, db)
-	})
 	router.HandleFunc("/api/getLanguages", func(w http.ResponseWriter, r *http.Request) {
 		getLanguages(w, r, db)
 	})
 	router.HandleFunc("/api/getProjects", func(w http.ResponseWriter, r *http.Request) {
 		getProjects(w, r, db)
+	})
+	router.HandleFunc("/api/checkAuth", func(w http.ResponseWriter, r *http.Request) {
+		checkAuthEndpoint(w, r, db)
 	})
 
 	//serve the frontend files
@@ -78,5 +78,5 @@ func main() {
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 	})
 
-	log.Fatal(http.ListenAndServe(":8080", cors.Handler(router)))
+	log.Fatal(http.ListenAndServe(":8080", AuthMiddleware(cors.Handler(router), db)))
 }
