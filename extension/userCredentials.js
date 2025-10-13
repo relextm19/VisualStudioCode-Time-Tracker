@@ -43,7 +43,7 @@ async function promptUserCredentials(context) {
             await register(email, password, context);
             return;
         } else {
-            login(email, password, context);
+            await login(email, password, context);
             return;
         }
     }

@@ -1,5 +1,6 @@
 const vscode = require('vscode');
 const fetch = require('isomorphic-fetch');
+const path = require('path')
 const { promptUserCredentials } = require('./userCredentials');
 
 const sessionData = {
@@ -8,17 +9,12 @@ const sessionData = {
 };
 
 async function activate(context) {
-    let token = context.globalState.get('WebSessionToken');
-
-    if (!token) {
+    console.log(context.globalState.get('WebSessionToken'))
+    if (!context.globalState.get('WebSessionToken')) {
         await promptUserCredentials(context);
-        token = context.globalState.get('WebSessionToken'); 
     }
-    global.WebSessionToken = token
-    // To avoid async problems with the initial session setup
-    setTimeout(() => {
-        initializeSession(context);
-    }, 1000);
+
+    await initializeSession(context);
 
     registerEventHandlers(context);
 }
@@ -30,8 +26,7 @@ function initializeSession(context) {
         sessionData.language = activeEditor.document.languageId;
         sessionData.project = vscode.workspace.rootPath ? getProjectName(vscode.workspace.rootPath) : '';
         sessionData.startTime = Date.now();
-        console.log("Initial session data:", JSON.stringify(sessionData));
-        startSession().catch(err => console.error("Error starting initial session:", err));
+        return startSession(context);
     }
 }
 
@@ -42,7 +37,7 @@ function registerEventHandlers(context) {
             if (!editor) {
                 if (sessionData.language !== '' && sessionData.project !== '') {
                     console.log('Ending session because editor was closed');
-                    await endSession();
+                    await endSession(context);
                     sessionData.language = '';
                     sessionData.project = '';
                 }
@@ -51,35 +46,37 @@ function registerEventHandlers(context) {
 
             // Editor is open get language/project
             const newLanguage = editor.document.languageId;
-            const newProject = vscode.workspace.rootPath ? getProjectName(vscode.workspace.rootPath) : '';
+            const newProject = getProjectName();
 
             // If language or project changed, end previous session
             if (newLanguage !== sessionData.language || newProject !== sessionData.project) {
                 if (sessionData.language !== '' && sessionData.project !== '') {
                     console.log('Ending session due to language/project change');
-                    await endSession();
+                    await endSession(context);
                 }
 
-                // Update session data
                 sessionData.language = newLanguage;
                 sessionData.project = newProject;
 
-                // Start new session
                 console.log('Starting new session');
-                await startSession();
+                await startSession(context);
             }
         })
     );
 }
 
-function getProjectName(rootPath) {
-    return rootPath.split('\\').pop();
+function getProjectName() {
+    const folders = vscode.workspace.workspaceFolders;
+    if (!folders || folders.length === 0) return ''; // no workspace open
+
+    const folder = folders[0];
+    const segments = folder.uri.path.split('/');
+
+    return segments[segments.length - 1];
 }
 
-async function startSession() {
+async function startSession(context) {
     try {
-        console.log("Starting session with data:", JSON.stringify(sessionData));
-
         if (!sessionData.language || !sessionData.project) {
             console.warn("Session data is incomplete. Language or project is not set.");
             return;
@@ -88,15 +85,13 @@ async function startSession() {
         const payload = {
             language: sessionData.language,
             project: sessionData.project,
-            WebSessionToken: global.WebSessionToken,
         };
 
-        console.log(global.WebSessionToken)
         const response = await fetch('http://127.0.0.1:8080/api/startSession', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${global.WebSessionToken}`
+                'Authorization': `Bearer ${context.globalState.get('WebSessionToken')}`
             },
             body: JSON.stringify(payload),
         });
@@ -112,7 +107,7 @@ async function startSession() {
     }
 }
 
-async function endSession() {
+async function endSession(context) {
     try {
         if (!sessionData.language || !sessionData.project) {
             console.warn("Session data is incomplete. Language or project is not set.");
@@ -122,14 +117,13 @@ async function endSession() {
         const payload = {
             language: sessionData.language,
             project: sessionData.project,
-            WebSessionToken: global.WebSessionToken,
         };
 
         const response = await fetch('http://127.0.0.1:8080/api/endSession', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${global.WebSessionToken}`
+                'Authorization': `Bearer ${context.globalState.get('WebSessionToken')}`
             },
             body: JSON.stringify(payload),
         });
@@ -146,7 +140,7 @@ async function endSession() {
 
 function deactivate(context) {
     if (sessionData.language !== '' && sessionData.project !== '') {
-        endSession();
+        endSession(context);
     }
     context.subscriptions.forEach(subscription => subscription.dispose());
 }
