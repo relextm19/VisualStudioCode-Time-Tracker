@@ -86,7 +86,7 @@ async function startSession(context) {
             language: sessionData.language,
             project: sessionData.project,
         };
-
+        console.log(context.globalState.get('WebSessionToken'))
         const response = await fetch('http://127.0.0.1:8080/api/startSession', {
             method: 'POST',
             headers: {

@@ -26,7 +26,7 @@ func main() {
 		startSession(w, r, db)
 	}).Methods("POST")
 	router.HandleFunc("/api/endSession", func(w http.ResponseWriter, r *http.Request) {
-		endSession(w, r, db)
+		endSessionHandler(w, r, db)
 	}).Methods("POST")
 	router.HandleFunc("/api/register", func(w http.ResponseWriter, r *http.Request) {
 		register(w, r, db)

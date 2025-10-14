@@ -17,7 +17,6 @@ var publicPrefixes = []string{"/assets/"}
 func checkAuthToken(token string, db *sql.DB) error {
 	exists := false
 	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM WebSessions WHERE webSessionToken = ? AND expiresAt > CAST(strftime('%s', 'now') AS INTEGER))", token).Scan(&exists)
-	log.Println(token)
 	if err != nil {
 		return fmt.Errorf("error quering database for WebsiteSession %s", err)
 	}

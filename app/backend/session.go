@@ -6,7 +6,7 @@ import (
 
 type Session struct {
 	//Some values can be null thus we use pointers
-	SessionID       int64   `json:"id"`
+	SessionID       int     `json:"id"`
 	WebSessionToken string  `json:"webSessionToken"`
 	StartDate       string  `json:"startDate"`
 	EndDate         *string `json:"endDate"`
@@ -16,58 +16,19 @@ type Session struct {
 	Project         string  `json:"project"`
 }
 
-func (s *Session) hasValidFields() bool {
-	if len(s.Language) <= 0 {
-		return false
+func (s *Session) hasValidFields() error {
+	if len(s.Language) < 1 {
+		return fmt.Errorf("Language name len has to be greater than 0")
 	}
-	if len(s.Project) <= 0 {
-		return false
+	if len(s.Project) < 1 {
+		return fmt.Errorf("Project name len has to be greater than 0")
 	}
-	if s.StartTime <= 0 {
-		return false
+	if s.StartTime < 1 {
+		return fmt.Errorf("Start time has to be more than 0")
 	}
-	if len(s.WebSessionToken) <= 0 {
-		return false
+	if len(s.StartDate) < 1 {
+		return fmt.Errorf("Start date len has to be greater than 0")
 	}
-	return true
-}
-
-type SessionSlice struct {
-	Sessions []Session //i could use a map but there are little enough sessions that a slice is fine
-	length   int
-}
-
-func (ss *SessionSlice) Push(s Session) {
-	ss.Sessions = append(ss.Sessions, s)
-	ss.length++
-}
-
-func (ss *SessionSlice) AddUnique(s Session) error {
-	for _, session := range ss.Sessions {
-		if session.WebSessionToken == s.WebSessionToken { // the user cant have multiple active sessions beacuase that would suggest an error in the vscode extension itself
-			return fmt.Errorf("user %s already has an active session", s.WebSessionToken)
-		}
-	}
-	ss.length++
-	ss.Sessions = append(ss.Sessions, s)
+	//no need to check the WebSessionToken as its already checked by the middleware
 	return nil
-}
-
-func (ss *SessionSlice) Remove(s Session) {
-	for i, session := range ss.Sessions {
-		if session.SessionID == s.SessionID {
-			ss.Sessions = append((ss.Sessions)[:i], (ss.Sessions)[i+1:]...)
-			return
-		}
-	}
-	ss.length--
-}
-
-func (ss *SessionSlice) GetSessionIDForUser(userID string) (int64, error) {
-	for _, session := range ss.Sessions {
-		if session.WebSessionToken == userID {
-			return session.SessionID, nil
-		}
-	}
-	return 0, fmt.Errorf("no session found for user %s", userID)
 }

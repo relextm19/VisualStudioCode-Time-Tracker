@@ -10,7 +10,7 @@ import (
 )
 
 func mapData(key string, db *sql.DB) (map[string]uint64, error) { //here we collect the time based on languages/projects
-	rows, err := db.Query("SELECT %s, startTime, endTime FROM Sessions", key)
+	rows, err := db.Query("SELECT endTime - startTime FROM Sessions", key)
 	if err != nil {
 		return nil, err
 	}
