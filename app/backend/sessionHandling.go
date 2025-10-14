@@ -69,12 +69,11 @@ func endSession(webSessionToken string, db *sql.DB) error {
 	sessionID, ok := openSessions[webSessionToken]
 	// if we dont have the sessionID cashed retieve it from the database
 	if !ok {
-		err := db.QueryRow("SELECT MAX(s.sessionID) FROM Sessions s JOIN WebSessions w on s.userID = w.userID WHERE w.WebSessionToken = ? AND s.endTime IS NULL", webSessionToken).Scan(&sessionID)
+		err := db.QueryRow("SELECT sessionID FROM Sessions WHERE userID = (SELECT userID FROM WebSessions WHERE webSessionToken = ?) AND endTime IS NULL LIMIT 1", webSessionToken).Scan(&sessionID)
 		if err != nil {
-			return fmt.Errorf("Error retrieving sessionID for WebSessionToken, err: %s", err)
+			return fmt.Errorf("Error retrieving sessionID for WebSessionToken: %s, %s", webSessionToken, err)
 		}
 	}
-
 	_, err := db.Exec("UPDATE Sessions SET endDate = ?, endTime = ? WHERE sessionID = ?",
 		endDate, endTime, sessionID)
 
