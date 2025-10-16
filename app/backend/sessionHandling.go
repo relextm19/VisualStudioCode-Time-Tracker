@@ -37,8 +37,7 @@ func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	//we take in an WebSessionToken to identfy the user without exposing the user ID and to expire the tokens but in the database its saved with the user ID
-	userID, err := getUserIDFromSessionID(db, session.WebSessionToken)
+	userID, err := getUserIDFromWebSessionToken(db, session.WebSessionToken)
 	res, err := db.Exec(
 		"INSERT INTO Sessions (userID, language, project, startTime, startDate, endTime, endDate) "+
 			"VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -114,23 +113,21 @@ func endSessionHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func getLanguages(w http.ResponseWriter, _ *http.Request, db *sql.DB) {
-	totalTimes, err := mapData("language", db)
+func getUserMetrics(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	authHeader := r.Header.Get("Authorization")
+	webSessionToken := strings.TrimPrefix(authHeader, "Bearer ")
+	log.Println(webSessionToken)
+	userID, err := getUserIDFromWebSessionToken(db, webSessionToken)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println("Error getting userID from WebSessionToken: ", err, webSessionToken)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(totalTimes); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func getProjects(w http.ResponseWriter, _ *http.Request, db *sql.DB) {
-	totalTimes, err := mapData("project", db)
+	totalTimes, err := mapData(db, userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println("Errpr fetching user metrics: ", err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 

@@ -34,12 +34,9 @@ func main() {
 	router.HandleFunc("/api/login", func(w http.ResponseWriter, r *http.Request) {
 		login(w, r, db)
 	}).Methods("POST")
-	router.HandleFunc("/api/getLanguages", func(w http.ResponseWriter, r *http.Request) {
-		getLanguages(w, r, db)
-	})
-	router.HandleFunc("/api/getProjects", func(w http.ResponseWriter, r *http.Request) {
-		getProjects(w, r, db)
-	})
+	router.HandleFunc("/api/userMetrics", func(w http.ResponseWriter, r *http.Request) {
+		getUserMetrics(w, r, db)
+	}).Methods("POST", "GET")
 	router.HandleFunc("/api/checkAuth", func(w http.ResponseWriter, r *http.Request) {
 		checkAuthEndpoint(w, r, db)
 	})

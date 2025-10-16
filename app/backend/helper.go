@@ -9,29 +9,26 @@ import (
 	"time"
 )
 
-func mapData(key string, db *sql.DB) (map[string]uint64, error) { //here we collect the time based on languages/projects
-	rows, err := db.Query("SELECT endTime - startTime FROM Sessions", key)
+func mapData(db *sql.DB, userID string) ([]map[string]uint64, error) { //here we collect the time based on languages/projects
+	rows, err := db.Query("SELECT language, project, endTime - startTime FROM Sessions WHERE userID = ? AND endTime NOT NULL", userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	totalTimes := make(map[string]uint64)
+	projects := make(map[string]uint64)
+	languages := make(map[string]uint64)
 
 	for rows.Next() {
-		var startTime uint64
-		var endTime *uint64
-		var language string
+		var deltaTime uint64
+		var language, project string
 
-		if err := rows.Scan(&language, &startTime, &endTime); err != nil {
+		if err := rows.Scan(&language, &project, &deltaTime); err != nil {
 			return nil, err
 		}
-		// log.Println(startTime, *endTime, language)
 
-		if endTime != nil && *endTime > startTime {
-			duration := *endTime - startTime
-			totalTimes[language] += duration
-		}
+		projects[project] += deltaTime
+		languages[language] += deltaTime
 	}
 
 	//check for errors during iteration
@@ -39,7 +36,7 @@ func mapData(key string, db *sql.DB) (map[string]uint64, error) { //here we coll
 		return nil, err
 	}
 
-	return totalTimes, nil
+	return []map[string]uint64{projects, languages}, nil
 }
 
 // return a 256-bit random token

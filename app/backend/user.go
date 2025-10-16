@@ -23,9 +23,9 @@ func (u *User) hasValidFields() bool {
 	return true
 }
 
-func getUserIDFromSessionID(db *sql.DB, webSessionToken string) (string, error) {
+func getUserIDFromWebSessionToken(db *sql.DB, webSessionToken string) (string, error) {
 	var userID string
-	err := db.QueryRow("SELECT userID FROM WebSessions WHERE WebSessionToken = ?", webSessionToken).Scan(&userID)
+	err := db.QueryRow("SELECT userID FROM WebSessions WHERE webSessionToken = ?", webSessionToken).Scan(&userID)
 	if err != nil {
 		return "", err
 	}
