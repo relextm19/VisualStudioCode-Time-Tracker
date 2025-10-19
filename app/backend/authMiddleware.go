@@ -20,13 +20,21 @@ func checkAuthToken(token string, db *sql.DB) error {
 	if err != nil {
 		return fmt.Errorf("error quering database for WebsiteSession %s", err)
 	}
-	if exists == false {
+	if !exists{
 		return fmt.Errorf("webSessionToken not correct")
 	}
 	return nil
 }
 
 func checkAuth(r *http.Request, db *sql.DB) error {
+	if authToken, err := getAuthToken(r); err != nil{
+		return err
+	}else{
+		return checkAuthToken(authToken, db)
+	}
+}
+
+func getAuthToken(r *http.Request) (string, error){
 	authToken := ""
 	if authCookie, err := r.Cookie("WebSessionToken"); err == nil {
 		authToken = authCookie.Value
@@ -34,8 +42,7 @@ func checkAuth(r *http.Request, db *sql.DB) error {
 		authHeader := r.Header.Get("Authorization")
 		authToken = strings.TrimPrefix(authHeader, "Bearer ")
 	}
-
-	return checkAuthToken(authToken, db)
+	return authToken, nil
 }
 
 func AuthMiddleware(next http.Handler, db *sql.DB) http.Handler {

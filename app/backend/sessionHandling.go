@@ -38,6 +38,11 @@ func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	userID, err := getUserIDFromWebSessionToken(db, session.WebSessionToken)
+	if err != nil{
+		fmt.Println("Error getting userID from webSessionToken,", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	res, err := db.Exec(
 		"INSERT INTO Sessions (userID, language, project, startTime, startDate, endTime, endDate) "+
 			"VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -70,14 +75,14 @@ func endSession(webSessionToken string, db *sql.DB) error {
 	if !ok {
 		err := db.QueryRow("SELECT sessionID FROM Sessions WHERE userID = (SELECT userID FROM WebSessions WHERE webSessionToken = ?) AND endTime IS NULL LIMIT 1", webSessionToken).Scan(&sessionID)
 		if err != nil {
-			return fmt.Errorf("Error retrieving sessionID for WebSessionToken: %s, %s", webSessionToken, err)
+			return fmt.Errorf("error retrieving sessionID for WebSessionToken: %s, %s", webSessionToken, err)
 		}
 	}
 	_, err := db.Exec("UPDATE Sessions SET endDate = ?, endTime = ? WHERE sessionID = ?",
 		endDate, endTime, sessionID)
 
 	if err != nil {
-		return fmt.Errorf("Error ending session %s", err)
+		return fmt.Errorf("error ending session %s", err)
 	}
 
 	delete(openSessions, webSessionToken)
@@ -114,9 +119,12 @@ func endSessionHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func getUserMetrics(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	authHeader := r.Header.Get("Authorization")
-	webSessionToken := strings.TrimPrefix(authHeader, "Bearer ")
-	log.Println(webSessionToken)
+	webSessionToken, err := getAuthToken(r) //getAuthToken checks both cookies and the request header
+	if err != nil{
+		log.Println("Error retrieving the auth token", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	userID, err := getUserIDFromWebSessionToken(db, webSessionToken)
 	if err != nil {
 		log.Println("Error getting userID from WebSessionToken: ", err, webSessionToken)

@@ -23,7 +23,7 @@ const props = defineProps({
     }
 });
 
-const hours = computed(() => Math.floor(props.totalTime / 3600).toString().padStart(2, '0'));
-const minutes = computed(() => Math.floor((props.totalTime % 3600) / 60).toString().padStart(2, '0'));
-const seconds = computed(() => (props.totalTime % 60).toString().padStart(2, '0'));
+const hours = Math.floor(props.totalTime / 3600).toString().padStart(2, '0')
+const minutes = Math.floor((props.totalTime % 3600) / 60).toString().padStart(2, '0')
+const seconds = (props.totalTime % 60).toString().padStart(2, '0')
 </script>
