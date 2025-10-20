@@ -3,7 +3,6 @@ import Login from './Login.vue';
 import Home from './Home.vue';
 import Register from './Register.vue';
 import Languages from './Languages.vue';
-import { log } from 'console';
 
 const routes = [
     { path: '/login', component: Login },
