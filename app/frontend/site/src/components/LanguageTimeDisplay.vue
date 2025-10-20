@@ -1,14 +1,17 @@
+
 <template>
-  <div class="flex items-center">
-    <div class="flex flex-col items-center">
-      <img :src="iconUrl" :alt="languageName" class="w-24 h-24" />
-      <p class="text-white text-2xl">{{ languageName }}</p>
+  <div class="flex items-center gap-4 p-4 rounded-xl shadow-md mb-4">
+    <img :src="iconUrl" :alt="languageName" class="w-16 h-16 rounded-full" />
+    <div class="flex flex-col">
+      <p class="text-white text-xl font-semibold">{{ languageName }}</p>
+      <p class="text-gray-300 font-mono text-lg">{{ hours }}h : {{ minutes }}m : {{ seconds }}s</p>
     </div>
-    <p class="text-white text-xl ml-5">{{ hours }}h:{{ minutes }}m:{{ seconds }}s</p>
   </div>
 </template>
 
 <script setup lang="ts">
+import { defineProps, computed } from 'vue'
+
 const props = defineProps<{
   languageName: string
   totalTime: number
@@ -16,8 +19,8 @@ const props = defineProps<{
 
 const iconUrl = `https://skillicons.dev/icons?i=${props.languageName}`
 
-// calculate time
-const hours = Math.floor(props.totalTime / 3600).toString().padStart(2, '0')
-const minutes = Math.floor((props.totalTime % 3600) / 60).toString().padStart(2, '0')
-const seconds = (props.totalTime % 60).toString().padStart(2, '0')
+// reactive time calculation
+const hours = computed(() => Math.floor(props.totalTime / 3600))
+const minutes = computed(() => Math.floor((props.totalTime % 3600) / 60))
+const seconds = computed(() => props.totalTime % 60)
 </script>
