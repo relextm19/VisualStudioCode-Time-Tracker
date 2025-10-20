@@ -1,5 +1,5 @@
 <template>
-    <div class="w-min rounded-2xl flex justify-items-center gap-2 border-2 border-white relative">
+    <div class="w-min rounded-2xl flex justify-items-center gap-2 border-2 ml-4 border-white relative">
         <div 
             class="absolute bg-white w-1/2 h-full rounded-2xl pointer-events-none transition-transform duration-200 ease-out"
             :class="props.showLanguages ? '' : 'translate-x-full'"
