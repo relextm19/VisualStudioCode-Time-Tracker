@@ -1,18 +1,18 @@
 <template>
     <TotalTimeDisplay :totalTime="totalTime" />
-    <DisplaySwitch />
-    <div v-if="languages.length > 0">
-        <div v-for="language in languages" :key="language.name">
+    <DisplaySwitch v-model:showLanguages="showLanguages"/>
+    <div v-if="currentlyShown.length > 0">
+        <div v-for="entry in currentlyShown" :key="entry.name">
             <LanguageTimeDisplay 
-                :languageName="language.name" 
-                :totalTime="language.time" 
+                :languageName="entry.name" 
+                :totalTime="entry.time" 
             />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import TotalTimeDisplay from './components/TotalTimeDisplay.vue'
 import LanguageTimeDisplay from './components/LanguageTimeDisplay.vue'
 import DisplaySwitch from './components/DisplaySwitch.vue'
@@ -32,5 +32,10 @@ onMounted(async () => {
     projects.value = json.projects;
     languages.value = json.languages;
     totalTime.value = json.totalTime;
+})
+
+const showLanguages = ref(true)
+const currentlyShown = computed(() => {
+    return showLanguages.value ? languages.value : projects.value
 })
 </script>
