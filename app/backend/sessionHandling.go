@@ -132,15 +132,20 @@ func getUserMetrics(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	totalTimes, err := mapData(db, userID)
+	mappedData, err := mapData(db, userID)
 	if err != nil {
 		log.Println("Errpr fetching user metrics: ", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(totalTimes); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	b, err := json.Marshal(mappedData)
+	if err != nil{
+		log.Println("Error marshaling data", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(b)
 }

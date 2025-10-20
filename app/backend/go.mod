@@ -8,3 +8,5 @@ require (
 )
 
 require github.com/rs/cors v1.11.1 // direct
+
+require github.com/deckarep/golang-set/v2 v2.8.0 // indirect
