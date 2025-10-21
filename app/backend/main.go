@@ -42,7 +42,7 @@ func main() {
 	})
 
 	//serve the frontend files
-	distDir := "../frontend/site/dist"
+	distDir := "../frontend/dist"
 	router.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Only handle non-API paths
 		if strings.HasPrefix(r.URL.Path, "/api/") {
