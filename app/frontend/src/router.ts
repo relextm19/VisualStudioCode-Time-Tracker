@@ -5,9 +5,9 @@ import Register from './Register.vue';
 import Languages from './Languages.vue';
 
 const routes = [
-    { path: '/login', component: Login },
+    { path: '/login', component: Login, meta: {public: true} },
+    { path: '/register', component: Register, meta: {public: true} },
     { path: '/', component: Home },
-    { path: '/register', component: Register },
     { path: '/languages', component: Languages },
 ];
 
@@ -19,9 +19,7 @@ const router = createRouter({
 let loggedIn = false;// cache the value so i dont have to hit /api/checkAuth every request. This is not a security issue cause i still have an auth middleware on the backend so if someone plays arround with the client side the app still wont let them acces data
 
 router.beforeEach(async (to, _, next) => {
-    const publicPaths = ['/login', '/register'];
-
-    if(publicPaths.includes(to.path)){
+    if(to.meta.public){
         if (loggedIn) return next('/');
         return next();
     }
