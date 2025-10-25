@@ -15,8 +15,8 @@
 import { ref, onMounted, computed } from 'vue'
 import TotalTimeDisplay from './components/TotalTimeDisplay.vue'
 import LanguageTimeDisplay from './components/LanguageTimeDisplay.vue'
-import DisplaySwitch from './components/DisplaySwitch.vue'
 import ProjectTimeDisplay from './components/ProjectTimeDisplay.vue'
+import DisplaySwitch from './components/DisplaySwitch.vue'
 
 interface timeData {
     name: string
@@ -30,7 +30,6 @@ const totalTime = ref(0)
 onMounted(async () => {
     const response = await fetch('/api/userMetrics')
     const json = await response.json()
-    console.log(json, response)
     projects.value = json.Projects
     languages.value = json.Languages
     totalTime.value = json.TotalTime
@@ -39,9 +38,14 @@ onMounted(async () => {
 const showLanguages = ref(true)
 const currentlyShown = computed(() => (showLanguages.value ? languages.value : projects.value))
 
-const getProps = (entry: timeData) => {
-    return showLanguages.value
-        ? { name: entry.name, totalTime: entry.time }
-        : { name: entry.name, totalTime: entry.time }
+interface Entry{
+    name: string
+    time: number
+    languages?: Record<string, number>[] //only project entries will have this
+}
+const getProps = (entry: Entry) =>{
+    return showLanguages.value ?
+        {name: entry.name, time: entry.time}:
+        {name:entry.name, time:entry.time, languageTimes: entry.languages}
 }
 </script>

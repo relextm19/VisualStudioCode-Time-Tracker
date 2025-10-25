@@ -13,13 +13,13 @@ import { defineProps, computed } from 'vue'
 
 const props = defineProps<{
   name: string
-  totalTime: number
+  time: number
 }>()
 
 const iconUrl = `https://skillicons.dev/icons?i=${props.name}`
 
 // reactive time calculation
-const hours = computed(() => Math.floor(props.totalTime / 3600))
-const minutes = computed(() => Math.floor((props.totalTime % 3600) / 60))
-const seconds = computed(() => props.totalTime % 60)
+const hours = computed(() => Math.floor(props.time / 3600))
+const minutes = computed(() => Math.floor((props.time % 3600) / 60))
+const seconds = computed(() => props.time % 60)
 </script>

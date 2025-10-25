@@ -13,7 +13,7 @@ type LanguageData struct {
 type ProjectData struct {
 	Name string `json:"name"`
 	Time uint64 `json:"time"`
-	Languages map[string]uint64 `json:"languages"`
+	LanguageTimes map[string]uint64 `json:"languages"`
 }
 
 type MappedData struct {
@@ -33,8 +33,6 @@ func NewMappedData() *MappedData {
 
 // MarshalJSON implements json.Marshaler and returns the mapped data in a format where maps are converted to slices for cleaner JSON.
 func (m *MappedData) MarshalJSON() ([]byte, error) {
-	type Alias MappedData
-
 	projects := make([]ProjectData, 0, len(m.Projects))
 	for _, v := range m.Projects {
 		projects = append(projects, v)
@@ -84,15 +82,15 @@ func mapData(db *sql.DB, userID string) (*MappedData, error) {
 		if p.Name == ""{
 			p.Name = projectName
 		}
-		if p.Languages == nil{
-			p.Languages = make(map[string]uint64)
+		if p.LanguageTimes == nil{
+			p.LanguageTimes = make(map[string]uint64)
 		}
 
 		if l.Name == ""{
 			l.Name = languageName
 		}
 		p.Time += deltaTime
-		p.Languages[l.Name] += deltaTime
+		p.LanguageTimes[l.Name] += deltaTime
 		l.Time += deltaTime
 		totalTime += deltaTime
 
