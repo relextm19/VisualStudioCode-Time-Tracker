@@ -5,29 +5,37 @@ import (
 	"encoding/json"
 	"sort"
 )
-type Data struct {
+type LanguageData struct {
 	Name string `json:"name"`
 	Time uint64 `json:"time"`
 }
 
+type ProjectData struct {
+	Name string `json:"name"`
+	Time uint64 `json:"time"`
+	Languages map[string]uint64 `json:"languages"`
+}
+
 type MappedData struct {
-	Projects  map[string]Data `json:"projects"`
-	Languages map[string]Data `json:"languages"`
-	totalTime uint64
+    Projects  map[string]ProjectData
+    Languages map[string]LanguageData
+	TotalTime uint64
 }
 
 func NewMappedData() *MappedData {
 	return &MappedData{
-		Projects:  make(map[string]Data),
-		Languages: make(map[string]Data),
+		//use maps for faster lookup during mapping
+		Projects:  make(map[string]ProjectData),
+		Languages: make(map[string]LanguageData),
+		TotalTime: 0,
 	}
 }
 
 // MarshalJSON implements json.Marshaler and returns the mapped data in a format where maps are converted to slices for cleaner JSON.
 func (m *MappedData) MarshalJSON() ([]byte, error) {
-	type Alias MappedData // we need to define an alias to avoid inifite recursion
+	type Alias MappedData
 
-	projects := make([]Data, 0, len(m.Projects))
+	projects := make([]ProjectData, 0, len(m.Projects))
 	for _, v := range m.Projects {
 		projects = append(projects, v)
 	}
@@ -35,7 +43,7 @@ func (m *MappedData) MarshalJSON() ([]byte, error) {
 		return projects[i].Time > projects[j].Time
 	})
 
-	languages := make([]Data, 0, len(m.Languages))
+	languages := make([]LanguageData, 0, len(m.Languages))
 	for _, v := range m.Languages {
 		languages = append(languages, v)
 	}
@@ -43,15 +51,15 @@ func (m *MappedData) MarshalJSON() ([]byte, error) {
 		return languages[i].Time > languages[j].Time
 	})
 
-	return json.Marshal(&struct {
-		Projects  []Data `json:"projects"`
-		Languages []Data `json:"languages"`
-		TotalTime uint64 `json:"totalTime"`
+	return json.Marshal(&struct{
+		Projects []ProjectData
+		Languages []LanguageData
+		TotalTime uint64
 	}{
-		Projects:  projects,
-		Languages: languages,
-		TotalTime: m.totalTime,
-	})
+			Projects:  projects,
+			Languages: languages,
+			TotalTime: m.TotalTime,
+		})
 }
 
 func mapData(db *sql.DB, userID string) (*MappedData, error) { 
@@ -76,18 +84,22 @@ func mapData(db *sql.DB, userID string) (*MappedData, error) {
 		if p.Name == ""{
 			p.Name = projectName
 		}
-		
+		if p.Languages == nil{
+			p.Languages = make(map[string]uint64)
+		}
+
 		if l.Name == ""{
 			l.Name = languageName
 		}
 		p.Time += deltaTime
+		p.Languages[l.Name] += deltaTime
 		l.Time += deltaTime
 		totalTime += deltaTime
 
 		mappedData.Projects[projectName] = p
 		mappedData.Languages[languageName] = l
 	}
-	mappedData.totalTime = totalTime
+	mappedData.TotalTime = totalTime
 
 	//check for errors during iteration
 	if err := rows.Err(); err != nil {

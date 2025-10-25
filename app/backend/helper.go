@@ -30,7 +30,7 @@ func getCurrentDateTime() (string, uint64) {
 
 func generateCookie(token string, exprDate time.Time) (http.Cookie, error) {
 	if len(token) < 1 {
-		return http.Cookie{}, fmt.Errorf("Cant create cookie the token is not present")
+		return http.Cookie{}, fmt.Errorf("cant create cookie the token is not present")
 	}
 	return http.Cookie{
 		Name:     "WebSessionToken",

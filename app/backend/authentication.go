@@ -147,6 +147,11 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 				return
 			}
 			authCookie, err := generateCookie(webSessionToken.Value, webSessionToken.Expiry)
+			if err != nil{
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 			http.SetCookie(w, &authCookie)
 			err = createNewWebSession(db, webSessionToken.Value, user.UserID, webSessionToken.Expiry.Unix())
 			if err != nil {
@@ -172,7 +177,7 @@ func login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 }
 
-func checkAuthEndpoint(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func checkAuthHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	err := checkAuth(r, db)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)

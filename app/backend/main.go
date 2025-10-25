@@ -38,7 +38,7 @@ func main() {
 		getUserMetrics(w, r, db)
 	}).Methods("POST", "GET")
 	router.HandleFunc("/api/checkAuth", func(w http.ResponseWriter, r *http.Request) {
-		checkAuthEndpoint(w, r, db)
+		checkAuthHandler(w, r, db)
 	})
 
 	//serve the frontend files

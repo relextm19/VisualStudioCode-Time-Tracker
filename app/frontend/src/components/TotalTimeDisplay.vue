@@ -1,16 +1,18 @@
 <template>
-    <div class="flex items-center justify-center w-full p-6 text-white">
-        <div class="flex flex-col items-center">
-            <h2 class="text-2xl uppercase tracking-wider text-white">Total Time</h2>
-            <div class="flex items-center justify-evenly gap-1">
-                <span class="text-3xl">{{ hours }}<span class="text-xs uppercase">hrs</span></span>
-                <span class="text-xl">:</span>
-                <span class="text-3xl">{{ minutes }}<span class="text-xs uppercase">min</span></span>
-                <span class="text-xl">:</span>
-                <span class="text-3xl">{{ seconds }}<span class="text-xs uppercase">sec</span></span>
-            </div>
-        </div>
+  <div class="flex items-center justify-center w-full py-8 text-white">
+    <div class="flex flex-col items-center">
+      <p class="text-3xl font-semibold uppercase tracking-wider mb-2">
+        Total Time
+      </p>
+      <div class="flex items-center gap-3 font-mono text-4xl text-gray-200">
+        <span>{{ hours }}<span class="text-sm uppercase ml-1">h</span></span>
+        <span class="text-2xl text-gray-400">:</span>
+        <span>{{ minutes }}<span class="text-sm uppercase ml-1">m</span></span>
+        <span class="text-2xl text-gray-400">:</span>
+        <span>{{ seconds }}<span class="text-sm uppercase ml-1">s</span></span>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup lang="ts">
