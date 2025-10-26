@@ -1,8 +1,9 @@
 <template>
     <div class="flex items-center gap-4 p-4 rounded-xl shadow-md mb-4">
+        <!-- have to use style cause tailwind cant intepret js variables -->
         <div
-            class="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold text-white"
-            :style="{ backgroundColor: `rgb(${color.join(',')})` }"
+            class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white border-2"
+            :style="{ borderColor: color }" 
         >
             {{ name[0].toUpperCase() }}
         </div>
@@ -13,7 +14,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { defineProps, computed } from 'vue'
+import { defineProps } from 'vue'
 import languageIconColors from '@/assets/skillicons-colors.json'
 
 
@@ -27,11 +28,9 @@ const colors: Record<string, number[]> = languageIconColors
 const dominantLanguage = Object.entries(props.languageTimes).reduce(
     (max, [name, time]) => (time > max[1] ? [name,time] : max)
 ) 
-const color = colors[dominantLanguage[0]]
-console.log(color)
+const color = `rgb(${colors[dominantLanguage[0]].join(',')})`
 
-// reactive time calculation
-const hours = computed(() => Math.floor(props.time / 3600))
-const minutes = computed(() => Math.floor((props.time % 3600) / 60))
-const seconds = computed(() => props.time % 60)
+const hours = Math.floor(props.time / 3600);
+const minutes = Math.floor((props.time % 3600) / 60);
+const seconds = props.time % 60;
 </script>

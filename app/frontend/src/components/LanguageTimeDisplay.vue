@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, computed } from 'vue'
+import { defineProps } from 'vue'
 
 const props = defineProps<{
   name: string
@@ -19,7 +19,7 @@ const props = defineProps<{
 const iconUrl = `https://skillicons.dev/icons?i=${props.name}`
 
 // reactive time calculation
-const hours = computed(() => Math.floor(props.time / 3600))
-const minutes = computed(() => Math.floor((props.time % 3600) / 60))
-const seconds = computed(() => props.time % 60)
+const hours = Math.floor(props.time / 3600);
+const minutes = Math.floor((props.time % 3600) / 60);
+const seconds = props.time % 60;
 </script>
