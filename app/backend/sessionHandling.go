@@ -12,6 +12,18 @@ import (
 
 var openSessions = make(map[string]int) // cash open sessions to deload the database, map WebSessionToken to a SessionID
 
+//very much so not the best approach but whatever
+var allowedFileExtensions = map[string]struct{}{
+    "python": {}, "c": {}, "cpp": {}, "csharp": {}, "java": {}, "kotlin": {},
+    "swift": {}, "go": {}, "rust": {}, "ruby": {}, "php": {}, "scala": {},
+    "julia": {}, "r": {}, "fortran": {}, "lua": {}, "perl": {}, "nim": {},
+    "crystal": {}, "elixir": {}, "haskell": {}, "ocaml": {}, "javascript": {},
+    "typescript": {}, "html": {}, "css": {}, "sass": {}, "bash": {}, "powershell": {},
+    "markdown": {}, "md": {}, "latex": {}, "cmake": {}, "git": {}, "vim": {},
+    "react": {}, "vue": {}, "angular": {}, "svelte": {}, "nextjs": {}, "nuxt": {},
+    "gatsby": {}, "tailwind": {}, "vite": {}, "deno": {},
+}
+
 func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	var session Session
 
@@ -25,6 +37,11 @@ func startSession(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("Error during unmarshal")
+		return
+	}
+	if _, ok := allowedFileExtensions[session.Language]; !ok{
+		w.WriteHeader(http.StatusBadRequest)	
+		log.Println("The language is not supported ", session.Language)
 		return
 	}
 	authHeader := r.Header.Get("Authorization")

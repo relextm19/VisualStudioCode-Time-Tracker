@@ -1,21 +1,24 @@
 <template>
-    <div class="flex items-center gap-4 p-4 rounded-xl shadow-md mb-4">
+    <div class="flex items-center gap-4 p-4 rounded-xl shadow-md mb-4 w-2/5">
         <!-- have to use style cause tailwind cant intepret js variables -->
         <div
-            class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white border-2"
-            :style="{ borderColor: color }" 
+            class="w-16 aspect-square rounded-full flex items-center justify-center text-2xl font-bold text-white border-2"
+            :style="{ borderColor: dominantColor}" 
         >
             {{ name[0].toUpperCase() }}
         </div>
-        <div class="flex flex-col">
+        <div class="flex flex-col w-full">
             <p class="text-white text-xl font-semibold">{{ name }}</p>
             <p class="text-gray-300 font-mono text-lg">{{ hours }}h : {{ minutes }}m : {{ seconds }}s</p>
+            <ProgressBar :segments=segments />
         </div>
     </div>
 </template>
+
 <script setup lang="ts">
-import { defineProps } from 'vue'
+import { defineProps, ref } from 'vue'
 import languageIconColors from '@/assets/skillicons-colors.json'
+import ProgressBar from './ProgressBar.vue';
 
 
 const props = defineProps<{
@@ -24,11 +27,36 @@ const props = defineProps<{
     languageTimes: Record<string,number>
 }>()
 
-const colors: Record<string, number[]> = languageIconColors
-const dominantLanguage = Object.entries(props.languageTimes).reduce(
-    (max, [name, time]) => (time > max[1] ? [name,time] : max)
-) 
-const color = `rgb(${colors[dominantLanguage[0]].join(',')})`
+const colorsObject: Record<string, number[]> = languageIconColors
+
+export interface Segment{
+    name: string,
+    time: number,
+    percentage: number,
+    color: string
+}
+const segments = ref<Segment[]>([])
+
+//get the language with most time
+const timeSum = ref(0)
+const dominantLanguage = ref<[string, number]>(["", 0])
+for (const [name, time] of Object.entries(props.languageTimes)){
+    timeSum.value += time;
+    segments.value.push({
+        name,
+        time,
+        percentage: 0, //the percentage will be calcualated after we get the proper time sum
+        color: `rgb(${colorsObject[name].join(',')})`
+    })
+    if (time > dominantLanguage.value[1]){
+        dominantLanguage.value = [name, time]
+    }
+}
+const dominantColor = `rgb(${colorsObject[dominantLanguage.value[0]].join(',')})`
+
+//I could do one pass but this is way cleaner and the performance wont be that imporant for our number of segments
+segments.value.forEach(s => s.percentage = Math.round(s.time / timeSum.value * 100))
+segments.value = segments.value.filter(s => s.percentage >= 1)
 
 const hours = Math.floor(props.time / 3600);
 const minutes = Math.floor((props.time % 3600) / 60);

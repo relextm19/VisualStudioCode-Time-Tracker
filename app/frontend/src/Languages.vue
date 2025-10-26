@@ -35,7 +35,7 @@ onMounted(async () => {
     totalTime.value = json.TotalTime
 })
 
-const showLanguages = ref(true)
+const showLanguages = ref(false)
 const currentlyShown = computed(() => (showLanguages.value ? languages.value : projects.value))
 
 interface Entry{
