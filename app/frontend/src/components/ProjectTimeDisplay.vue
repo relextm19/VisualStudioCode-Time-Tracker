@@ -1,8 +1,8 @@
 <template>
     <div class="flex items-center gap-4 p-4 rounded-xl shadow-md mb-4 w-full">
-        <!-- have to use style cause tailwind cant intepret js variables -->
+        <!-- for some reason min-w-16 works but min-w doesnt -->
         <div
-            class="w-16 aspect-square rounded-full flex items-center justify-center text-2xl font-bold text-white border-2"
+            class="min-w-16 aspect-square rounded-full flex items-center justify-center text-2xl font-bold text-white border-2"
             :style="{ borderColor: dominantColor}" 
         >
             {{ name[0].toUpperCase() }}

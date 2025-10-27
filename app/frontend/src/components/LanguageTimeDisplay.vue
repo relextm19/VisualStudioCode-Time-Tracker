@@ -1,7 +1,11 @@
 <template>
-  <div class="flex items-center gap-4 p-4 rounded-xl shadow-md mb-4">
-    <img :src="iconUrl" :alt="name" class="w-16 h-16 rounded-full" />
-    <div class="flex flex-col">
+    <div class="flex items-center gap-4 p-4 rounded-xl shadow-md mb-4">
+        <img
+            :src="iconUrl"
+            :alt="name"
+            class="w-16 h-16 rounded-full object-cover block"
+        />
+        <div class="flex flex-col">
       <p class="text-white text-xl font-semibold">{{ name }}</p>
       <p class="text-gray-300 font-mono text-lg">{{ hours }}h : {{ minutes }}m : {{ seconds }}s</p>
     </div>
