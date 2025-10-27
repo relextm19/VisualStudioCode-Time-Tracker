@@ -1,5 +1,5 @@
 <template>
-    <div class="flex items-center gap-4 p-4 rounded-xl shadow-md mb-4 w-2/5">
+    <div class="flex items-center gap-4 p-4 rounded-xl shadow-md mb-4 w-full">
         <!-- have to use style cause tailwind cant intepret js variables -->
         <div
             class="w-16 aspect-square rounded-full flex items-center justify-center text-2xl font-bold text-white border-2"
@@ -7,7 +7,7 @@
         >
             {{ name[0].toUpperCase() }}
         </div>
-        <div class="flex flex-col w-full">
+        <div class="flex flex-col w-1/5">
             <p class="text-white text-xl font-semibold">{{ name }}</p>
             <p class="text-gray-300 font-mono text-lg">{{ hours }}h : {{ minutes }}m : {{ seconds }}s</p>
             <ProgressBar :segments=segments />
