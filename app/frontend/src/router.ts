@@ -2,13 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Login from './Login.vue';
 import Home from './Home.vue';
 import Register from './Register.vue';
-import Languages from './Languages.vue';
+import Dashboard from './Dashboard.vue';
 
 const routes = [
     { path: '/login', component: Login, meta: {public: true} },
     { path: '/register', component: Register, meta: {public: true} },
     { path: '/', component: Home },
-    { path: '/languages', component: Languages },
+    { path: '/dashboard', component: Dashboard},
 ];
 
 const router = createRouter({

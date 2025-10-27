@@ -7,10 +7,12 @@
         >
             {{ name[0].toUpperCase() }}
         </div>
-        <div class="flex flex-col w-1/5">
-            <p class="text-white text-xl font-semibold">{{ name }}</p>
+        <div class="flex flex-col w-full">
+            <p class="text-white text-xl font-semibold w-fit">{{ name }}</p>
             <p class="text-gray-300 font-mono text-lg">{{ hours }}h : {{ minutes }}m : {{ seconds }}s</p>
-            <ProgressBar :segments=segments />
+            <div class="w-1/5">
+                <ProgressBar :segments=segments />
+            </div>
         </div>
     </div>
 </template>
@@ -18,7 +20,7 @@
 <script setup lang="ts">
 import { defineProps, ref } from 'vue'
 import languageIconColors from '@/assets/skillicons-colors.json'
-import ProgressBar from './ProgressBar.vue';
+import ProgressBar from './ProjectTimeBar.vue';
 
 
 const props = defineProps<{

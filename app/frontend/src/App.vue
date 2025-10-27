@@ -7,7 +7,7 @@
 
       <nav class="flex gap-6">
         <MenuElement to="/login" text="Login" />
-        <MenuElement to="/languages" text="Languages" />
+        <MenuElement to="/dashboard" text="Dashboard" />
         <MenuElement to="/" text="Home" />
       </nav>
     </div>
