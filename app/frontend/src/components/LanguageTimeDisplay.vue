@@ -10,16 +10,14 @@
 
 <script setup lang="ts">
 import { defineProps } from 'vue'
+import { formatTime } from '@/utils/formatTime';
 
 const props = defineProps<{
   name: string
   time: number
 }>()
 
-const iconUrl = `https://skillicons.dev/icons?i=${props.name}`
+const iconUrl = `https://skillicons.dev/icons?i=${props.name}`;
 
-// reactive time calculation
-const hours = Math.floor(props.time / 3600);
-const minutes = Math.floor((props.time % 3600) / 60);
-const seconds = props.time % 60;
+const [hours, minutes, seconds] = formatTime(props.time);
 </script>

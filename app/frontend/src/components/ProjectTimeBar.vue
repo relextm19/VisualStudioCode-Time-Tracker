@@ -1,16 +1,10 @@
 <template>
     <div class="flex items-center w-full">
-        <div
+        <div 
             v-for="(segment, index) in segments" :key=index
-        >
-            <div 
-                class="h-2 text-white text-center"
-                :class="{ 'rounded-r-full': index === segments.length - 1, 'rounded-l-full': index === 0 }"
-                :style="{ width: `${segment.percentage}%`, backgroundColor: segment.color }">
-            </div>
-            <div>
-                <p> {{ segment.name }} : {{ segment.time }}</p>
-            </div>
+            class="h-2 text-white text-center"
+            :class="{ 'rounded-r-full': index === segments.length - 1, 'rounded-l-full': index === 0 }"
+            :style="{ width: `${segment.percentage}%`, backgroundColor: segment.color }">
         </div>
     </div>
 </template>

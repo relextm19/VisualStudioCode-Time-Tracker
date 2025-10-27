@@ -21,7 +21,7 @@
 import { defineProps, ref } from 'vue'
 import languageIconColors from '@/assets/skillicons-colors.json'
 import ProgressBar from './ProjectTimeBar.vue';
-
+import { formatTime } from '@/utils/formatTime';
 
 const props = defineProps<{
     name: string
@@ -60,7 +60,5 @@ const dominantColor = `rgb(${colorsObject[dominantLanguage.value[0]].join(',')})
 segments.value.forEach(s => s.percentage = Math.round(s.time / timeSum.value * 100))
 segments.value = segments.value.filter(s => s.percentage >= 1)
 
-const hours = Math.floor(props.time / 3600);
-const minutes = Math.floor((props.time % 3600) / 60);
-const seconds = props.time % 60;
+const [hours, minutes, seconds] = formatTime(props.time)
 </script>
