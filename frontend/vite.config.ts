@@ -19,11 +19,9 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            // When your frontend calls /api/login...
             '/api': {
-                target: 'http://localhost:42069', // Fixed: Colon instead of slash
+                target: 'http://localhost:42069',
                 changeOrigin: true,
-                // Fixed: Removed quotes around the regex
                 rewrite: (path) => path.replace(/^\/api/, '')
             }
         }

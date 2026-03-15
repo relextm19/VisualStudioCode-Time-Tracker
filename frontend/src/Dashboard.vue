@@ -17,32 +17,24 @@ import DisplaySwitch from './components/DisplaySwitch.vue'
 
 interface timeData {
     name: string
-    time: number
+    totalTime: number
 }
 
 const projects = ref<timeData[]>([])
 const languages = ref<timeData[]>([])
-const totalTime = ref(0)
 
 onMounted(async () => {
     const response = await fetch('/api/sessions')
     const json = await response.json()
-    projects.value = json.Projects
-    languages.value = json.Languages
-    totalTime.value = json.TotalTime
+    projects.value = json.byProject
+    languages.value = json.byLanguage
 })
 
 const showLanguages = ref(false)
 const currentlyShown = computed(() => (showLanguages.value ? languages.value : projects.value))
+const totalTime = computed(() => languages.value.reduce((acc, e) => acc + e.totalTime, 0))
 
-interface Entry {
-    name: string
-    time: number
-    languages?: Record<string, number>[] //only project entries will have this
-}
-const getProps = (entry: Entry) => {
-    return showLanguages.value ?
-        { name: entry.name, time: entry.time } :
-        { name: entry.name, time: entry.time, languageTimes: entry.languages }
+const getProps = (data: timeData) => {
+    return { name: data.name, time: data.totalTime }
 }
 </script>
