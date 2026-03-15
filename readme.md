@@ -39,7 +39,7 @@ npm run dev
 
 ---
 
-## 📊 How to Use
+## How to Use
 
 * **Automatic Tracking:** Once the extension is active, it automatically logs the time spent on every file you open.
 * **View Statistics:** Open your browser and navigate to:
