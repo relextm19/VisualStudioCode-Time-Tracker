@@ -43,4 +43,4 @@ npm run dev
 
 * **Automatic Tracking:** Once the extension is active, it automatically logs the time spent on every file you open.
 * **View Statistics:** Open your browser and navigate to:
-> **[http://127.0.0.1:5173](http://127.0.0.1:5173)**
+> **[http://localhost:5173](http://localhost:5173)**
