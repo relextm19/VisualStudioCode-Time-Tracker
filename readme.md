@@ -48,4 +48,4 @@ npm run dev
 
 * **Automatic Tracking:** Once the extension is active, it automatically logs the time spent on every file you open.
 * **View Statistics:** Open your browser and navigate to:
-> **[http://localhost:5173](http://localhost:5173)*screenshot-2026-03-15_21-38-29.png*
+> **[http://localhost:5173](http://localhost:5173)
