@@ -13,13 +13,15 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "main": "./extension.js",
+  "main": "./dist/extension.js",
   "scripts": {
-    "lint": "eslint .",
+    "compile": "tsc",
+    "lint": "eslint . --ext .ts",
     "pretest": "npm run lint",
     "test": "vscode-test"
   },
   "devDependencies": {
+    "@types/isomorphic-fetch": "^0.0.39",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
     "@types/vscode": "^1.89.0",
