@@ -18,7 +18,7 @@ function clearErrorVisibility() {
     errorVisible.value = false;
 }
 
-watch(errorVisible, ()=>{
+watch(errorVisible, () => {
     if (errorVisible.value) {
         emailInput.value?.displayError();
         passwordInput.value?.displayError();
@@ -29,8 +29,8 @@ watch(errorVisible, ()=>{
 });
 
 async function handleSubmit() {
-    try{
-        const response = await fetch('api/login', {
+    try {
+        const response = await fetch('/api/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -41,12 +41,12 @@ async function handleSubmit() {
                 password: password.value,
             }),
         });
-        if (response.ok){
+        if (response.ok) {
             router.push('/');
-        } else{
+        } else {
             errorVisible.value = true;
         }
-    } catch(error){
+    } catch (error) {
         console.error("Error during login:", error);
     }
 }
@@ -55,25 +55,20 @@ async function handleSubmit() {
 
 <template>
     <div class="h-screen flex justify-center items-center">
-        <form 
+        <form
             class="bg-black h-3/5 w-full max-w-xs p-8 rounded-lg shadow-lg flex flex-col justify-evenly border border-white"
-            @submit.prevent="handleSubmit"
-        >
+            @submit.prevent="handleSubmit">
             <h1 class="text-white text-3xl font-bold text-center">LOGIN</h1>
             <EmailInput v-model="email" ref="emailInput" @focus="clearErrorVisibility"></EmailInput>
             <PasswordInput v-model="password" ref="passwordInput" @focus="clearErrorVisibility"></PasswordInput>
-            <div class=" text-red-500 text-center"
-                v-if="errorVisible"
-            >
+            <div class=" text-red-500 text-center" v-if="errorVisible">
                 <p>
                     Invalid credentials
                 </p>
             </div>
-            <input 
+            <input
                 class="bg-transparent text-white border border-white w-full h-10 rounded-md hover:bg-white hover:text-black transition duration-200 cursor-pointer"
-                type="submit" 
-                value="Login"
-            >
+                type="submit" value="Login">
             <div class="text-center">
                 <p class="text-white underline">
                     <router-link to="/register" class="cursor-pointer">No account yet?</router-link>

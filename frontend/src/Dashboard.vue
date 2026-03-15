@@ -1,12 +1,9 @@
 <template>
     <TotalTimeDisplay :totalTime="totalTime" />
-    <DisplaySwitch v-model:showLanguages="showLanguages"/>
+    <DisplaySwitch v-model:showLanguages="showLanguages" />
     <div v-if="currentlyShown.length > 0">
         <div v-for="entry in currentlyShown" :key="entry.name">
-            <component
-                :is="showLanguages ? LanguageTimeDisplay : ProjectTimeDisplay"
-                v-bind="getProps(entry)"
-            />
+            <component :is="showLanguages ? LanguageTimeDisplay : ProjectTimeDisplay" v-bind="getProps(entry)" />
         </div>
     </div>
 </template>
@@ -28,7 +25,7 @@ const languages = ref<timeData[]>([])
 const totalTime = ref(0)
 
 onMounted(async () => {
-    const response = await fetch('/api/userMetrics')
+    const response = await fetch('/api/sessions')
     const json = await response.json()
     projects.value = json.Projects
     languages.value = json.Languages
@@ -38,14 +35,14 @@ onMounted(async () => {
 const showLanguages = ref(false)
 const currentlyShown = computed(() => (showLanguages.value ? languages.value : projects.value))
 
-interface Entry{
+interface Entry {
     name: string
     time: number
     languages?: Record<string, number>[] //only project entries will have this
 }
-const getProps = (entry: Entry) =>{
+const getProps = (entry: Entry) => {
     return showLanguages.value ?
-        {name: entry.name, time: entry.time}:
-        {name:entry.name, time:entry.time, languageTimes: entry.languages}
+        { name: entry.name, time: entry.time } :
+        { name: entry.name, time: entry.time, languageTimes: entry.languages }
 }
 </script>
