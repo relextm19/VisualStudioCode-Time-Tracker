@@ -16,7 +16,7 @@ const props = defineProps<{
     time: number
 }>()
 
-const iconUrl = `https://skillicons.dev/icons?i=${props.name}`;
+const iconUrl = `https://skillicons.dev/icons?i=${props.name.toLowerCase()}`;
 
 const [hours, minutes, seconds] = formatTime(props.time);
 </script>

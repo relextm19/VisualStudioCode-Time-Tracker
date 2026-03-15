@@ -28,9 +28,10 @@ onMounted(async () => {
     const json = await response.json()
     projects.value = json.byProject
     languages.value = json.byLanguage
+    console.log(languages.value)
 })
 
-const showLanguages = ref(false)
+const showLanguages = ref(true)
 const currentlyShown = computed(() => (showLanguages.value ? languages.value : projects.value))
 const totalTime = computed(() => languages.value.reduce((acc, e) => acc + e.totalTime, 0))
 

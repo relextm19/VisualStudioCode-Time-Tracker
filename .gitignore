@@ -7,6 +7,7 @@
 
 # Ignore .vscode directories
 /extension/.vscode
+.vscode
 
 # Ignore specific files
 /extension/.vscodeignore
