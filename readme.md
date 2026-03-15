@@ -1,34 +1,46 @@
-# Visual Studio Code Time Tracker
+# VS Code Time Tracker
 
-This tool allows you to track your activity within Visual Studio Code by recording file usage and providing statistics via a web interface.
+An activity tracker that monitors file usage in Visual Studio Code and visualizes it via a web interface.
 
-## Requirements
+## Prerequisites
 
-- **Golang** installed
-- **npm** or another package manager installed
-- **Visual Studio Code** installed
+Before getting started, ensure you have the following installed:
 
-## Setup
+* **Node.js & npm** – to run the frontend dashboard.
+* **Visual Studio Code** – the primary editor environment.
 
-1. **Install the extension:**
-    - Open the **Extensions** panel in Visual Studio Code.
-    - Click on the three dots (`...`) in the top-right corner of the panel.
-    - Select **Install from VSIX**.
-    - Navigate to the `extension/` folder and select the `timetracker-0.0.1.vsix` file to install the extension.
+---
 
-2. **Run the backend:**
-    - Open your terminal.
-    - Navigate to the `app/backend` directory.
-    - Run the following command to start the backend service:
-      ```bash
-      go run .
-      ```
+##  Setup Instructions
 
-## Usage
+### 1. Install the VS Code Extension
 
-- After completing the setup, every time you open a file in Visual Studio Code, it will be registered by the time tracker.
-- To view your usage statistics, open your browser and go to [127.0.0.1:5000](http://127.0.0.1:5000) or [localhost:5000](http://localhost:5000).
+Currently, the extension is installed manually via VSIX:
 
-## Contribution
+1. Open **Visual Studio Code**.
+2. Navigate to the **Extensions** view (`Ctrl+Shift+X`).
+3. Click the **More Actions** (...) icon in the top-right corner.
+4. Select **Install from VSIX...**.
+5. Select `extension/timetracker-0.0.1.vsix` from the project directory.
 
-Feel free to contribute by creating issues or submitting pull requests.
+### 2. Launch the Frontend (it will be hosted soon but for now you will have to resort to running it locally)
+
+To view your statistics, start the development server:
+
+1. Navigate to the `/frontend` directory.
+2. Install dependencies: `npm install`
+3. Start the app:
+```bash
+npm run dev
+
+```
+
+
+
+---
+
+## 📊 How to Use
+
+* **Automatic Tracking:** Once the extension is active, it automatically logs the time spent on every file you open.
+* **View Statistics:** Open your browser and navigate to:
+> **[http://127.0.0.1:5173](http://127.0.0.1:5173)**
