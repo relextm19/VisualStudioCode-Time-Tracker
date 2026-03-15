@@ -1,6 +1,10 @@
 # VS Code Time Tracker
-[languages_view](./readme_assets/screenshot-2026-03-15_21-38-29.png)
-[projects_view](./readme_assets/screenshot-2026-03-15_21-44-24.png)
+<table>
+  <tr>
+    <td><img src="./readme_assets/screenshot-2026-03-15_21-38-29.png" alt="Languages View" width="400"></td>
+    <td><img src="./readme_assets/screenshot-2026-03-15_21-44-24.png" alt="Projects View" width="400"></td>
+  </tr>
+</table>
 An activity tracker that monitors file usage in Visual Studio Code and visualizes it via a web interface.
 
 ## Prerequisites
@@ -44,4 +48,4 @@ npm run dev
 
 * **Automatic Tracking:** Once the extension is active, it automatically logs the time spent on every file you open.
 * **View Statistics:** Open your browser and navigate to:
-> **[http://localhost:5173](http://localhost:5173)**
+> **[http://localhost:5173](http://localhost:5173)*screenshot-2026-03-15_21-38-29.png*
