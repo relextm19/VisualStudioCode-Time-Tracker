@@ -1,5 +1,6 @@
 # VS Code Time Tracker
-
+[languages_view](./readme_assets/screenshot-2026-03-15_21-38-29.png)
+[projects_view](./readme_assets/screenshot-2026-03-15_21-44-24.png)
 An activity tracker that monitors file usage in Visual Studio Code and visualizes it via a web interface.
 
 ## Prerequisites
