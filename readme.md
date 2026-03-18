@@ -28,20 +28,6 @@ Currently, the extension is installed manually via VSIX:
 4. Select **Install from VSIX...**.
 5. Select `extension/timetracker-0.0.1.vsix` from the project directory.
 
-### 2. Launch the Frontend (it will be hosted soon but for now you will have to resort to running it locally)
-
-To view your statistics, start the development server:
-
-1. Navigate to the `/frontend` directory.
-2. Install dependencies: `npm install`
-3. Start the app:
-```bash
-npm run dev
-
-```
-
-
-
 ---
 
 ## How to Use
